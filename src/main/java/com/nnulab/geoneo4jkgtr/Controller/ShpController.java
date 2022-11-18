@@ -20,8 +20,10 @@ public class ShpController {
         if (toGeoJsonRequest == null) {
             return null;
         }
-        String sourcePath = toGeoJsonRequest.getSourcePath();
-        String targetPath = toGeoJsonRequest.getTargetPath();
+//        String sourcePath = toGeoJsonRequest.getSourcePath();
+//        String targetPath = toGeoJsonRequest.getTargetPath();
+        String sourcePath = "E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\StudyData\\StudyData\\stratas.shp";
+        String targetPath =  "E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\StudyData\\StudyData\\geojson\\strata.json";
         if (StringUtils.isAnyBlank(sourcePath, targetPath)) {
             return null;
         }

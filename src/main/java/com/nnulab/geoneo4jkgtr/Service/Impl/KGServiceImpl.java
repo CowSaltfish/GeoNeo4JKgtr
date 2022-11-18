@@ -198,6 +198,7 @@ public class KGServiceImpl implements KGService {
         if (relationships != null && nodes != null) {
             knowledgeGraph.setRelationships(relationships);
             knowledgeGraph.setNodes(nodes);
+            System.out.println(nodes);
             lightenKnowledgeGraph(knowledgeGraph);
             return knowledgeGraph;
         }

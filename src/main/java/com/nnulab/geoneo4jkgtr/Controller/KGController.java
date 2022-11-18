@@ -23,6 +23,7 @@ public class KGController {
     @Resource
     private KGService kgService;
 
+    @CrossOrigin
     @PostMapping("/create")
     public void createKG(@RequestBody KGCreateRequest kgCreateRequest) {
         if (kgCreateRequest == null) {
@@ -39,6 +40,7 @@ public class KGController {
         kgService.CreateTopoBetweenFacesFromBoundaries();
     }
 
+    @CrossOrigin
     @GetMapping("/searchAllKG")
     public KnowledgeGraph searchAllKG() {
         //返回知识图谱全要素

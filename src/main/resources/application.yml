@@ -12,7 +12,7 @@ spring:
     neo4j:
       uri: http://localhost:7474
       username: neo4j
-      password: lab_417
+      password: neo4jpwd
 #  main:
 server:
   port: 8081

@@ -20,8 +20,8 @@ public class ShpServiceImpl implements ShpService {
     @Override
     public JSONObject ToGeoJson(String sourcePath, String targetPath) {
         try {
-            File zipFile = new File(sourcePath);
-            ZipUtil.unZip(sourcePath, sourcePath);//解压zip
+//            File zipFile = new File(sourcePath);
+//            ZipUtil.unZip(sourcePath, sourcePath);//解压zip
             GdalUtil.Shp2GeoJson(sourcePath, targetPath);
 
             FileInputStream fileInputStream = new FileInputStream(targetPath);
