@@ -1,6 +1,7 @@
 package com.nnulab.geoneo4jkgtr.Model;
 
 import com.nnulab.geoneo4jkgtr.Entity.Boundary;
+import com.nnulab.geoneo4jkgtr.Entity.Chronology;
 import com.nnulab.geoneo4jkgtr.Entity.Face;
 import com.nnulab.geoneo4jkgtr.Entity.GeoEvent;
 import com.nnulab.geoneo4jkgtr.Util.GdalUtil;
@@ -23,6 +24,7 @@ public class GeoMap {
     private ArrayList<Face> faces = new ArrayList<>();
     private HashMap<String, GeoEvent> events = new HashMap<>();
     private ArrayList<Boundary> boundaries = new ArrayList<>();
+    private Chronology chronology = new Chronology();
 
     public GeoMap(String facePath, String boundaryPath) {
         //读取面要素
@@ -33,6 +35,24 @@ public class GeoMap {
         boundaryLayer = GdalUtil.getLayerByPath(boundaryPath);
         if (null != boundaryLayer)
             setBoundaryLayer(boundaryLayer);
+
+        //写入地层年代表
+        chronology.getList().add("P");
+        chronology.getList().add("E");
+        chronology.getList().add("Q");
+        chronology.getList().add("F");
+        chronology.getList().add("R");
+        chronology.getList().add("D");
+        chronology.getList().add("T");
+        chronology.getList().add("U");
+        chronology.getList().add("V");
+        chronology.getList().add("W");
+        chronology.getList().add("O");
+        chronology.getList().add("M");
+        chronology.getList().add("J");
+        chronology.getList().add("K");
+        chronology.getList().add("G");
+        chronology.getList().add("B");
     }
 
     public void addFace(Face face) {

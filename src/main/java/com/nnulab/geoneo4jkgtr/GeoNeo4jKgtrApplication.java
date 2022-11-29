@@ -12,6 +12,8 @@ import org.springframework.context.annotation.ComponentScan;
 		"com.nnulab.geoneo4jkgtr.Controller",
 		"com.nnulab.geoneo4jkgtr.Service",
 		"com.nnulab.geoneo4jkgtr.Dao",
+		"com.nnulab.geoneo4jkgtr.Config",
+		"com.nnulab.geoneo4jkgtr.Util",
 })
 public class GeoNeo4jKgtrApplication {
 

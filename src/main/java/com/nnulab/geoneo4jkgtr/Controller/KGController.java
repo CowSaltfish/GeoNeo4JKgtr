@@ -1,16 +1,11 @@
 package com.nnulab.geoneo4jkgtr.Controller;
 
-import com.alibaba.fastjson.JSONObject;
-import com.nnulab.geoneo4jkgtr.Model.GeoMap;
 import com.nnulab.geoneo4jkgtr.Model.KnowledgeGraph;
 import com.nnulab.geoneo4jkgtr.Model.request.KGCreateRequest;
 import com.nnulab.geoneo4jkgtr.Service.KGService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author : LiuXianYu
@@ -25,19 +20,23 @@ public class KGController {
 
     @CrossOrigin
     @PostMapping("/create")
-    public void createKG(@RequestBody KGCreateRequest kgCreateRequest) {
+    public KnowledgeGraph createKG(@RequestBody KGCreateRequest kgCreateRequest) {
         if (kgCreateRequest == null) {
-            return;
+            return null;
         }
         String facePath = kgCreateRequest.getFacePath();
         String boundaryPath = kgCreateRequest.getBoundaryPath();
-        if (StringUtils.isAnyBlank(facePath, boundaryPath)) {
-            return;
-        }
+//        if (StringUtils.isAnyBlank(facePath, boundaryPath)) {
+//            return null;
+//        }
+
         //节点生成
-        kgService.createKG(facePath, boundaryPath);
+        kgService.createNodes(facePath, boundaryPath);
         //构建要素时空关系(邻接、方向、距离)、角度
-        kgService.CreateTopoBetweenFacesFromBoundaries();
+        kgService.CreateRelationshipBetweenFaces();
+
+        //返回知识图谱全要素
+        return kgService.searchAllKG();
     }
 
     @CrossOrigin
@@ -45,6 +44,13 @@ public class KGController {
     public KnowledgeGraph searchAllKG() {
         //返回知识图谱全要素
         return kgService.searchAllKG();
+    }
+
+    @CrossOrigin
+    @GetMapping("/search")
+    public KnowledgeGraph search(@RequestBody String ontologyJson) {
+        //根据本体查询相应知识图谱
+        return kgService.search(ontologyJson);
     }
 
     /**

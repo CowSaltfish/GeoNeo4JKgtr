@@ -1,6 +1,5 @@
 package com.nnulab.geoneo4jkgtr.Service.Impl;
 
-import com.alibaba.fastjson.JSONObject;
 import com.nnulab.geoneo4jkgtr.Dao.*;
 import com.nnulab.geoneo4jkgtr.Entity.*;
 import com.nnulab.geoneo4jkgtr.Entity.Basic.BasicNode;
@@ -11,17 +10,15 @@ import com.nnulab.geoneo4jkgtr.Entity.Relationship.SpatialRelationship.AdjacentR
 import com.nnulab.geoneo4jkgtr.Model.GeoMap;
 import com.nnulab.geoneo4jkgtr.Model.KnowledgeGraph;
 import com.nnulab.geoneo4jkgtr.Service.KGService;
+import com.nnulab.geoneo4jkgtr.Util.Neo4jUtil;
 import com.nnulab.geoneo4jkgtr.Util.TopologyUtil;
-import org.apache.commons.lang3.StringUtils;
 import org.gdal.ogr.Feature;
 import org.gdal.ogr.Geometry;
 import org.gdal.ogr.Layer;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -165,19 +162,15 @@ public class KGServiceImpl implements KGService {
     }
 
     @Override
-    public void CreateTopoBetweenFacesFromBoundaries() {
-        relationDao.CreateAdjacentRelationBetweenFacesFromBoundaries();
-        relationDao.CreateContainsRelationBetweenFacesFromBoundaries();
+    public void CreateRelationshipBetweenFaces() {
+        saveTimeRelationship();//获取地质要素间时间关系，并存入数据库
+        saveSpatialRelationship();//获取地质要素间空间关系，并存入数据库
     }
 
     @Override
-    public void createKG(String facePath, String boundaryPath) {
+    public void createNodes(String facePath, String boundaryPath) {
         geoMap = new GeoMap(facePath, boundaryPath);
-
         saveFaces();//读取面要素并存入数据库
-
-        saveTimeRelationship();//获取地质要素间时间关系，并存入数据库
-        saveSpatialRelationship();//获取地质要素间空间关系，并存入数据库
         saveBoundaries();//读取地层界线及断层数据并存入数据库
     }
 
@@ -187,7 +180,8 @@ public class KGServiceImpl implements KGService {
     }
 
     private void saveSpatialRelationship() {
-
+        relationDao.CreateAdjacentRelationBetweenFacesFromBoundaries();
+        relationDao.CreateContainsRelationBetweenFacesFromBoundaries();
     }
 
     @Override
@@ -205,19 +199,28 @@ public class KGServiceImpl implements KGService {
         return null;
     }
 
+    @Override
+    public KnowledgeGraph search(String ontologyJson) {
+//        String cypher = Neo4jUtil.ontologyJson2Cypher(ontologyJson);
+
+
+
+        return null;
+    }
+
     private void lightenKnowledgeGraph(KnowledgeGraph knowledgeGraph) {
         List<BasicRelation> relationships = knowledgeGraph.getRelationships();
         List<Object> nodes = knowledgeGraph.getNodes();
         for (BasicRelation br :
                 relationships) {
-            br.setSourceId(br.getSource().getId());
-            br.setTargetId(br.getTarget().getId());
+            br.setStartNode(br.getSource().getId());
+            br.setEndNode(br.getTarget().getId());
             br.setSource(null);
             br.setTarget(null);
         }
         for (Object node :
                 nodes) {
-            if(node instanceof Face){
+            if (node instanceof Face) {
                 Face face = (Face) node;
                 face.getAdjacent().clear();
                 face.getBelong().clear();
@@ -308,8 +311,6 @@ public class KGServiceImpl implements KGService {
         long numFeature = boundaryLayer.GetFeatureCount(0);
 
         for (int i = 0; i < numFeature; ++i) {
-            if (i == 103)
-                System.out.println("");
             feature = boundaryLayer.GetFeature(i);
 
             Boundary boundary = new Boundary();
@@ -318,15 +319,15 @@ public class KGServiceImpl implements KGService {
             //断层
             if ((-1 != boundaryLayer.FindFieldIndex("type", 0) && "fault".equals(feature.GetFieldAsString("type")))
                     || (-1 != boundaryLayer.FindFieldIndex("Type", 0) && "fault".equals(feature.GetFieldAsString("Type")))) {
-//                List<Fault> faults = kgService.findFaultByName(feature.GetFieldAsString("name"));
-                List<Fault> faults = findFaultByName(feature.GetFieldAsString("code"));
+                List<Fault> faults = findFaultByName(feature.GetFieldAsString("name"));
+//                List<Fault> faults = findFaultByName(feature.GetFieldAsString("code"));
                 if (!faults.isEmpty()) {//数据库中存在这个断层
                     //添加界线属于断层关系
                     saveRelation(new BelongRelation(boundary, faults.get(0)));
                 } else {
                     Fault fault = new Fault();
-//                    fault.setName(feature.GetFieldAsString("name"));
-                    fault.setName(feature.GetFieldAsString("code"));
+                    fault.setName(feature.GetFieldAsString("name"));
+//                    fault.setName(feature.GetFieldAsString("code"));
                     fault.setCode(feature.GetFieldAsString("code"));
                     //加入新断层
                     saveNode(fault);

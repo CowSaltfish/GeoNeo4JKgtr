@@ -65,9 +65,11 @@ public interface KGService {
 
     void inferTimeOfFaultsByStrata();
 
-    void CreateTopoBetweenFacesFromBoundaries();
+    void CreateRelationshipBetweenFaces();
 
-    void createKG(String facePath, String boundaryPath);
+    void createNodes(String facePath, String boundaryPath);
 
     KnowledgeGraph searchAllKG();
+
+    KnowledgeGraph search(String ontologyJson);
 }

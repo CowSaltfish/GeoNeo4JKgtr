@@ -8,7 +8,7 @@ import java.util.List;
 @Data
 public class KnowledgeGraph {
 
-    List<BasicRelation> relationships;
     List<Object> nodes;
+    List<BasicRelation> relationships;
 
 }

@@ -1,28 +1,14 @@
 package com.nnulab.geoneo4jkgtr.Controller;
 
-import com.alibaba.fastjson.JSONObject;
-import com.nnulab.geoneo4jkgtr.Dao.BasicNodeDao;
-import com.nnulab.geoneo4jkgtr.Dao.BoundaryDao;
-import com.nnulab.geoneo4jkgtr.Dao.FaceDao;
-import com.nnulab.geoneo4jkgtr.Dao.FaultDao;
-import com.nnulab.geoneo4jkgtr.Entity.Basic.BasicNode;
+
 import com.nnulab.geoneo4jkgtr.Model.KnowledgeGraph;
 import com.nnulab.geoneo4jkgtr.Model.request.KGCreateRequest;
-import com.nnulab.geoneo4jkgtr.Service.KGService;
 import com.nnulab.geoneo4jkgtr.Util.GdalUtil;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-
-import java.io.BufferedWriter;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.ObjectOutputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author : LiuXianYu
@@ -45,14 +31,18 @@ public class KGControllerTest {
         GdalUtil.init();
 
         //南京主要断层
-//        kgController.createKG(null,
-//                "E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\NanjingFaults\\fault.shp");
+        KGCreateRequest kgCreateRequest = new KGCreateRequest();
+        kgCreateRequest.setBoundaryPath("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\NanjingFaults\\fault.shp");
+        kgController.createKG(kgCreateRequest);
 
         //基金本子上的剖面图
-        KGCreateRequest kgCreateRequest = new KGCreateRequest();
-        kgCreateRequest.setFacePath("C:\\Users\\lab\\Desktop\\知识图谱地质事件时序推理\\Data\\StudyData\\StudyData\\stratas.shp");
-        kgCreateRequest.setBoundaryPath("C:\\Users\\lab\\Desktop\\知识图谱地质事件时序推理\\Data\\StudyData\\StudyData\\boundary.shp");
-        kgController.createKG(kgCreateRequest);
+//        KGCreateRequest kgCreateRequest = new KGCreateRequest();
+////        kgCreateRequest.setFacePath("C:\\Users\\lab\\Desktop\\知识图谱地质事件时序推理\\Data\\StudyData\\StudyData\\stratas.shp");
+////        kgCreateRequest.setBoundaryPath("C:\\Users\\lab\\Desktop\\知识图谱地质事件时序推理\\Data\\StudyData\\StudyData\\boundary.shp");
+//        kgCreateRequest.setFacePath("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\StudyData\\StudyData\\stratas.shp");
+//        kgCreateRequest.setBoundaryPath("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\StudyData\\StudyData\\boundary.shp");
+
+//        kgController.createKG(kgCreateRequest);
 
         //五龙山剖面图
 //        kgController.createKG("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\五龙山剖面图\\剖面地层.shp",

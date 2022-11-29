@@ -17,7 +17,7 @@ public interface BoundaryDao extends Neo4jRepository<Boundary, Long> {
 //    @Query("MATCH (n:Boundary) WHERE n.id = \"{0}\" RETURN n")
 //    Optional<Boundary> findById(Long id);
 
-@Query("MATCH (n:Boundary) WHERE n.fid = $fid RETURN n limit 1")
+@Query("MATCH (n:Boundary) WHERE n.fid = $fid RETURN n")
     List<Boundary> findByFid(@Param("fid") int fid);
 
 }

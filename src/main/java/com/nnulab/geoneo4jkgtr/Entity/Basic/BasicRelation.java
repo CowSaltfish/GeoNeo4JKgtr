@@ -1,5 +1,7 @@
 package com.nnulab.geoneo4jkgtr.Entity.Basic;
 
+import com.nnulab.geoneo4jkgtr.Model.ESFilter;
+import com.nnulab.geoneo4jkgtr.Model.PropertiesFilter;
 import lombok.Data;
 import org.neo4j.ogm.annotation.*;
 
@@ -14,9 +16,15 @@ public class BasicRelation implements BasicRelationInterface{
     @GraphId
     private Long id;
     @Property
-    private Long sourceId;
+    private Long startNode;
     @Property
-    private Long targetId;
+    private Long endNode;
+
+    @Property
+    private PropertiesFilter properties_filter;
+
+    @Property
+    private ESFilter es_filter;
 
     @StartNode
     private BasicNode source;
@@ -33,26 +41,41 @@ public class BasicRelation implements BasicRelationInterface{
     public BasicRelation(){
 
     }
-
-    public Long getSourceId() {
-        return sourceId;
-    }
-
-    public void setSourceId(Long sourceId) {
-        this.sourceId = sourceId;
-    }
-
-    public Long getTargetId() {
-        return targetId;
-    }
-
-    public void setTargetId(Long targetId) {
-        this.targetId = targetId;
-    }
-
     public BasicRelation(BasicNode source, BasicNode target) {
         this.source = source;
         this.target = target;
+    }
+
+    public Long getStartNode() {
+        return startNode;
+    }
+
+    public void setStartNode(Long startNode) {
+        this.startNode = startNode;
+    }
+
+    public Long getEndNode() {
+        return endNode;
+    }
+
+    public void setEndNode(Long endNode) {
+        this.endNode = endNode;
+    }
+
+    public PropertiesFilter getProperties_filter() {
+        return properties_filter;
+    }
+
+    public void setProperties_filter(PropertiesFilter properties_filter) {
+        this.properties_filter = properties_filter;
+    }
+
+    public ESFilter getEs_filter() {
+        return es_filter;
+    }
+
+    public void setEs_filter(ESFilter es_filter) {
+        this.es_filter = es_filter;
     }
 
     @Override

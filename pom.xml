@@ -45,20 +45,26 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-neo4j</artifactId>
 		</dependency>
+
 <!--		<dependency>-->
 <!--			<groupId>org.neo4j</groupId>-->
 <!--			<artifactId>neo4j-connector-apache-spark_2.13</artifactId>-->
 <!--			<version>5.0.0</version>-->
 <!--			<type>pom</type>-->
 <!--		</dependency>-->
+		<!-- 服务器开发需要的jar包 -->
 <!--		<dependency>-->
-<!--			&lt;!&ndash; 服务器开发需要的jar包 &ndash;&gt;-->
 <!--			<groupId>org.neo4j.driver</groupId>-->
 <!--			<artifactId>neo4j-java-driver</artifactId>-->
 <!--			<version>5.2.0</version>-->
 <!--		</dependency>-->
+		<dependency>
+			<groupId>org.neo4j</groupId>
+			<artifactId>neo4j-jdbc-driver</artifactId>
+			<version>3.4.0</version>
+		</dependency>
+		<!-- 嵌入式开发需要的jar包 -->
 <!--		<dependency>-->
-<!--			&lt;!&ndash; 嵌入式开发需要的jar包 &ndash;&gt;-->
 <!--			<groupId>org.neo4j</groupId>-->
 <!--			<artifactId>neo4j</artifactId>-->
 <!--			<version>5.1.0</version>-->
