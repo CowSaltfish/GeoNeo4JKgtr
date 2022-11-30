@@ -33,7 +33,7 @@ public class KGControllerTest {
         //南京主要断层
         KGCreateRequest kgCreateRequest = new KGCreateRequest();
         kgCreateRequest.setBoundaryPath("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\NanjingFaults\\fault.shp");
-        kgController.createKG(kgCreateRequest);
+        kgController.create(kgCreateRequest);
 
         //基金本子上的剖面图
 //        KGCreateRequest kgCreateRequest = new KGCreateRequest();

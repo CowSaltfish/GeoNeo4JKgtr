@@ -20,7 +20,7 @@ public class KGController {
 
     @CrossOrigin
     @PostMapping("/create")
-    public KnowledgeGraph createKG(@RequestBody KGCreateRequest kgCreateRequest) {
+    public KnowledgeGraph create(@RequestBody KGCreateRequest kgCreateRequest) {
         if (kgCreateRequest == null) {
             return null;
         }
@@ -46,12 +46,34 @@ public class KGController {
         return kgService.searchAllKG();
     }
 
+    /**
+     * cypher查询
+     * @param cypher
+     * @return
+     */
     @CrossOrigin
     @GetMapping("/search")
-    public KnowledgeGraph search(@RequestBody String ontologyJson) {
+    public KnowledgeGraph search(@RequestBody String cypher) {
         //根据本体查询相应知识图谱
-        return kgService.search(ontologyJson);
+        return kgService.search(cypher);
     }
+
+    @CrossOrigin
+    @PostMapping("/searchByOntology")
+    public KnowledgeGraph searchByOntology(@RequestBody String ontologyName) {
+        if (StringUtils.isAnyBlank(ontologyName)) {
+            return null;
+        }
+        return kgService.searchByOntology(ontologyName);
+    }
+
+
+
+
+
+
+
+
 
     /**
      * 基于界线属于断层关系、界线间邻接关系，推断断层切割关系

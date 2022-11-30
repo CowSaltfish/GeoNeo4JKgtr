@@ -71,5 +71,7 @@ public interface KGService {
 
     KnowledgeGraph searchAllKG();
 
-    KnowledgeGraph search(String ontologyJson);
+    KnowledgeGraph search(String cypher);
+
+    KnowledgeGraph searchByOntology(String ontologyName);
 }

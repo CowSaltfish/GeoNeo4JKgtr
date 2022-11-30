@@ -163,8 +163,16 @@ public class KGServiceImpl implements KGService {
 
     @Override
     public void CreateRelationshipBetweenFaces() {
-        saveTimeRelationship();//获取地质要素间时间关系，并存入数据库
-        saveSpatialRelationship();//获取地质要素间空间关系，并存入数据库
+        //生成边界间拓扑关系
+        if (0 != getBoundaryCount()) {
+            //添加边界邻接关系
+            System.out.println("添加边界邻接关系");
+            createTopoOfBoundaries(geoMap.getBoundaryLayer());
+        }
+        //获取地质要素间时间关系，并存入数据库
+        saveTimeRelationship();
+        //获取地质要素间空间关系，并存入数据库
+        saveSpatialRelationship();
     }
 
     @Override
@@ -200,10 +208,21 @@ public class KGServiceImpl implements KGService {
     }
 
     @Override
-    public KnowledgeGraph search(String ontologyJson) {
+    public KnowledgeGraph search(String cypher) {
 //        String cypher = Neo4jUtil.ontologyJson2Cypher(ontologyJson);
 
 
+
+        return null;
+    }
+
+    @Override
+    public KnowledgeGraph searchByOntology(String ontologyName) {
+        //基于本体名称获取本体
+
+        //本体转为cypher
+
+        //查询返回子图
 
         return null;
     }
@@ -364,13 +383,6 @@ public class KGServiceImpl implements KGService {
                 if (face != null)//判断界线是否是地层上边界或下边界
                     saveRelation(new BelongRelation(boundary, face).setBelongType(TopologyUtil.JudgeEdgeAtTopOrBottomOfFace(feature.GetGeometryRef(), false)));
             }
-        }
-
-        //生成边界间拓扑关系
-        if (0 != getBoundaryCount()) {
-            //添加边界邻接关系
-            System.out.println("添加边界邻接关系");
-            createTopoOfBoundaries(boundaryLayer);
         }
     }
 
