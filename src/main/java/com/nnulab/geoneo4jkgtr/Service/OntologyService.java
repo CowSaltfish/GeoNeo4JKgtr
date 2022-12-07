@@ -8,10 +8,12 @@ import com.nnulab.geoneo4jkgtr.Model.KnowledgeGraph;
  */
 public interface OntologyService {
 
-    KnowledgeGraph create(String ontologyJson);
+    void save(String name, String ontologyJson);
 
-    KnowledgeGraph searchByName(String ontologyName);
+    KnowledgeGraph findByName(String name);
 
-    KnowledgeGraph editByName(String ontologyName, String ontologyJson);
+    long updateOntology(String ontologyName, String ontologyJson);
+
+    void deleteOntologyByName(String name);
 
 }

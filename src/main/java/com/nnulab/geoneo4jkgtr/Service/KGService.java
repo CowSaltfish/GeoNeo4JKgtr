@@ -1,16 +1,14 @@
 package com.nnulab.geoneo4jkgtr.Service;
 
-import com.alibaba.fastjson.JSONObject;
-import com.nnulab.geoneo4jkgtr.Entity.Basic.BasicNode;
-import com.nnulab.geoneo4jkgtr.Entity.Basic.BasicRelation;
-import com.nnulab.geoneo4jkgtr.Entity.Boundary;
-import com.nnulab.geoneo4jkgtr.Entity.Face;
-import com.nnulab.geoneo4jkgtr.Entity.Fault;
-import com.nnulab.geoneo4jkgtr.Entity.GeoEvent;
-import com.nnulab.geoneo4jkgtr.Entity.Relationship.CuttingOffRelation;
-import com.nnulab.geoneo4jkgtr.Entity.Relationship.CuttingThroughRelation;
-import com.nnulab.geoneo4jkgtr.Entity.Relationship.MutuallyCuttingRelation;
-import com.nnulab.geoneo4jkgtr.Model.GeoMap;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Basic.BasicNode;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Basic.BasicRelation;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Boundary;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Face;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Fault;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.GeoEvent;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Relations.CuttingOffRelation;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Relations.CuttingThroughRelation;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Relations.MutuallyCuttingRelation;
 import com.nnulab.geoneo4jkgtr.Model.KnowledgeGraph;
 
 import java.util.List;

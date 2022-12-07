@@ -20,32 +20,39 @@ public class OntologyController {
     private OntologyService ontologyService;
 
     @CrossOrigin
-    @PostMapping("/create")
-    public KnowledgeGraph create(@RequestBody String ontologyJson) {
+    @PostMapping("/save")
+    public void save(@RequestBody String name, @RequestBody String ontologyJson) {
         if (StringUtils.isAnyBlank(ontologyJson)) {
-            return null;
+            return;
         }
-        return ontologyService.create(ontologyJson);
+        ontologyService.save(name, ontologyJson);
     }
 
     @CrossOrigin
-    @PostMapping("/searchByName")
-    public KnowledgeGraph searchByName(@RequestBody String ontologyName) {
+    @PostMapping("/findByName")
+    public KnowledgeGraph findByName(@RequestBody String ontologyName) {
         if (StringUtils.isAnyBlank(ontologyName)) {
             return null;
         }
-        return ontologyService.searchByName(ontologyName);
+        return ontologyService.findByName(ontologyName);
     }
 
     @CrossOrigin
-    @PostMapping("/editByName")
-    public KnowledgeGraph editByName(@RequestBody String ontologyName, @RequestBody String ontologyJson) {
+    @PostMapping("/updateOntology")
+    public long updateOntology(@RequestBody String ontologyName, @RequestBody String ontologyJson) {
         if (StringUtils.isAnyBlank(ontologyName, ontologyJson)) {
-            return null;
+            return 0;
         }
-        return ontologyService.editByName(ontologyName, ontologyJson);
+        return ontologyService.updateOntology(ontologyName, ontologyJson);
     }
 
-
+    @CrossOrigin
+    @PostMapping("/deleteOntologyByName")
+    public void deleteOntologyByName(@RequestBody String ontologyName) {
+        if (StringUtils.isAnyBlank(ontologyName)) {
+            return;
+        }
+        ontologyService.deleteOntologyByName(ontologyName);
+    }
 
 }

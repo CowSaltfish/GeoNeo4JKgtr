@@ -1,8 +1,12 @@
 package com.nnulab.geoneo4jkgtr.Service.Impl;
 
+import com.alibaba.fastjson.JSON;
+import com.nnulab.geoneo4jkgtr.Dao.OntologyDao;
 import com.nnulab.geoneo4jkgtr.Model.KnowledgeGraph;
 import com.nnulab.geoneo4jkgtr.Service.OntologyService;
 import org.springframework.stereotype.Service;
+
+import javax.annotation.Resource;
 
 /**
  * @author : LiuXianYu
@@ -11,21 +15,31 @@ import org.springframework.stereotype.Service;
 @Service
 public class OntologyServiceImpl implements OntologyService {
 
+    @Resource
+    private OntologyDao ontologyDao;
+
     @Override
-    public KnowledgeGraph create(String ontologyJson) {
+    public void save(String name, String ontologyJson) {
         //基于本体json创建本体
-
-        return null;
+        KnowledgeGraph ontology = JSON.parseObject(ontologyJson, KnowledgeGraph.class);
+        ontology.setName(name);
+        ontology.setOntology(true);
+        ontologyDao.save(ontology);
     }
 
     @Override
-    public KnowledgeGraph searchByName(String ontologyName) {
-        return null;
+    public KnowledgeGraph findByName(String name) {
+        return ontologyDao.findByName(name);
     }
 
     @Override
-    public KnowledgeGraph editByName(String ontologyName, String ontologyJson) {
-        return null;
+    public long updateOntology(String ontologyName, String ontologyJson) {
+        KnowledgeGraph ontology = JSON.parseObject(ontologyJson, KnowledgeGraph.class);
+        return ontologyDao.updateOntology(ontologyName, ontology);
     }
 
+    @Override
+    public void deleteOntologyByName(String name) {
+        ontologyDao.deleteOntologyByName(name);
+    }
 }

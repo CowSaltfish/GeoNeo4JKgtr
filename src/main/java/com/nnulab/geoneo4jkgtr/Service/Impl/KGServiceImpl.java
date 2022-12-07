@@ -1,20 +1,30 @@
 package com.nnulab.geoneo4jkgtr.Service.Impl;
 
+import com.alibaba.fastjson.JSON;
 import com.nnulab.geoneo4jkgtr.Dao.*;
-import com.nnulab.geoneo4jkgtr.Entity.*;
-import com.nnulab.geoneo4jkgtr.Entity.Basic.BasicNode;
-import com.nnulab.geoneo4jkgtr.Entity.Basic.BasicRelation;
-import com.nnulab.geoneo4jkgtr.Entity.Enum.StratumType;
-import com.nnulab.geoneo4jkgtr.Entity.Relationship.*;
-import com.nnulab.geoneo4jkgtr.Entity.Relationship.SpatialRelationship.AdjacentRelation;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Basic.BasicNode;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Basic.BasicRelation;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Basic.ScenarioRelation;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Enum.StratumType;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Boundary;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Face;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Fault;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.GeoEvent;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Relations.*;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Relations.SpatialRelationship.AdjacentRelation;
 import com.nnulab.geoneo4jkgtr.Model.GeoMap;
 import com.nnulab.geoneo4jkgtr.Model.KnowledgeGraph;
 import com.nnulab.geoneo4jkgtr.Service.KGService;
+import com.nnulab.geoneo4jkgtr.Service.OntologyService;
 import com.nnulab.geoneo4jkgtr.Util.Neo4jUtil;
 import com.nnulab.geoneo4jkgtr.Util.TopologyUtil;
 import org.gdal.ogr.Feature;
 import org.gdal.ogr.Geometry;
 import org.gdal.ogr.Layer;
+import org.neo4j.driver.v1.Record;
+import org.neo4j.driver.v1.StatementResult;
+import org.neo4j.driver.v1.types.Path;
+import org.neo4j.driver.v1.types.Relationship;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -45,6 +55,12 @@ public class KGServiceImpl implements KGService {
 
     @Resource
     private GeoEventDao geoEventDao;
+
+    @Resource
+    private OntologyService ontologyService;
+
+    @Resource
+    private Neo4jUtil neo4jUtil;
 
     private GeoMap geoMap;
 
@@ -195,7 +211,7 @@ public class KGServiceImpl implements KGService {
     @Override
     public KnowledgeGraph searchAllKG() {
         KnowledgeGraph knowledgeGraph = new KnowledgeGraph();
-        List<BasicRelation> relationships = relationDao.searchAllRelationships();
+        List<ScenarioRelation> relationships = relationDao.searchAllRelationships();
         List<Object> nodes = relationDao.searchAllNodes();
         if (relationships != null && nodes != null) {
             knowledgeGraph.setRelationships(relationships);
@@ -209,33 +225,28 @@ public class KGServiceImpl implements KGService {
 
     @Override
     public KnowledgeGraph search(String cypher) {
-//        String cypher = Neo4jUtil.ontologyJson2Cypher(ontologyJson);
-
-
-
-        return null;
+        return neo4jUtil.result2Path(neo4jUtil.RunCypher(cypher));
     }
 
     @Override
     public KnowledgeGraph searchByOntology(String ontologyName) {
         //基于本体名称获取本体
-
+        KnowledgeGraph ontology = ontologyService.findByName(ontologyName);
         //本体转为cypher
-
+        String cypher = neo4jUtil.ontologyJson2Cypher(JSON.toJSONString(ontology));
         //查询返回子图
-
-        return null;
+        return neo4jUtil.result2Path(neo4jUtil.RunCypher(cypher));
     }
 
     private void lightenKnowledgeGraph(KnowledgeGraph knowledgeGraph) {
-        List<BasicRelation> relationships = knowledgeGraph.getRelationships();
+        List<ScenarioRelation> relationships = knowledgeGraph.getRelationships();
         List<Object> nodes = knowledgeGraph.getNodes();
-        for (BasicRelation br :
+        for (ScenarioRelation sr :
                 relationships) {
-            br.setStartNode(br.getSource().getId());
-            br.setEndNode(br.getTarget().getId());
-            br.setSource(null);
-            br.setTarget(null);
+            sr.setStartNode(sr.getSource().getId());
+            sr.setEndNode(sr.getTarget().getId());
+            sr.setSource(null);
+            sr.setTarget(null);
         }
         for (Object node :
                 nodes) {
@@ -269,7 +280,7 @@ public class KGServiceImpl implements KGService {
         Feature feature;
         double[] env = new double[4];
 
-        //创建地层面对象
+        //创建地层节点
         for (int i = 0; i < numFeature; ++i) {
             feature = faceLayer.GetFeature(i);
             Face face = new Face();
@@ -281,10 +292,10 @@ public class KGServiceImpl implements KGService {
             if (-1 != faceLayer.FindFieldIndex("Type", 0)) {
                 String featureType = feature.GetFieldAsString("Type");
                 if (Objects.equals(featureType, "Sedimentary")) {
-                    face.setType(StratumType.Sedimentary);
+                    face.setStratumType(StratumType.Sedimentary);
 //                    face.setCenter_y(feature.GetGeometryRef().Centroid().GetY());
                 } else if ((Objects.equals(featureType, "Magmatic")))
-                    face.setType(StratumType.Magmatic);
+                    face.setStratumType(StratumType.Magmatic);
             }
 
             if (-1 != faceLayer.FindFieldIndex("name", 0)) {
@@ -300,11 +311,11 @@ public class KGServiceImpl implements KGService {
 //                face.addPoint(new Vertex(pointsGeometry.GetX(j), pointsGeometry.GetY(j), pointsGeometry.GetZ(j)));
 //            }
 
-            //添加面要素
+            //地层节点存入库中
             saveNode(face);
             geoMap.addFace(face);
 
-            //添加形成事件
+            //形成事件存入库中，并建立地层-形成事件的关系
             GeoEvent geoEvent;
             List<GeoEvent> geoEvents;
             if (geoMap.getEvents().containsKey(face.getNodeName()))
@@ -338,15 +349,15 @@ public class KGServiceImpl implements KGService {
             //断层
             if ((-1 != boundaryLayer.FindFieldIndex("type", 0) && "fault".equals(feature.GetFieldAsString("type")))
                     || (-1 != boundaryLayer.FindFieldIndex("Type", 0) && "fault".equals(feature.GetFieldAsString("Type")))) {
-                List<Fault> faults = findFaultByName(feature.GetFieldAsString("name"));
-//                List<Fault> faults = findFaultByName(feature.GetFieldAsString("code"));
+//                List<Fault> faults = findFaultByName(feature.GetFieldAsString("name"));
+                List<Fault> faults = findFaultByName(feature.GetFieldAsString("code"));
                 if (!faults.isEmpty()) {//数据库中存在这个断层
                     //添加界线属于断层关系
                     saveRelation(new BelongRelation(boundary, faults.get(0)));
                 } else {
                     Fault fault = new Fault();
-                    fault.setName(feature.GetFieldAsString("name"));
-//                    fault.setName(feature.GetFieldAsString("code"));
+//                    fault.setName(feature.GetFieldAsString("name"));
+                    fault.setName(feature.GetFieldAsString("code"));
                     fault.setCode(feature.GetFieldAsString("code"));
                     //加入新断层
                     saveNode(fault);

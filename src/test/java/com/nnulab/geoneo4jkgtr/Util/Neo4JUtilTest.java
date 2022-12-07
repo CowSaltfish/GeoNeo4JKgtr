@@ -16,11 +16,6 @@ public class Neo4JUtilTest extends TestCase {
     private Neo4jUtil neo4jUtil;
 
     @Test
-    public void testGetNodesInfo() {
-        Neo4jUtil.getNodesInfo("match (n:Face) return n");
-    }
-
-    @Test
     public void testOntologyJson2Cypher() {
         System.out.println(neo4jUtil.ontologyJson2Cypher("{\n" +
                 "    \"graph\":{\n" +

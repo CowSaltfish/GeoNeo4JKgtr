@@ -31,18 +31,18 @@ public class KGControllerTest {
         GdalUtil.init();
 
         //南京主要断层
-        KGCreateRequest kgCreateRequest = new KGCreateRequest();
-        kgCreateRequest.setBoundaryPath("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\NanjingFaults\\fault.shp");
-        kgController.create(kgCreateRequest);
+//        KGCreateRequest kgCreateRequest = new KGCreateRequest();
+//        kgCreateRequest.setBoundaryPath("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\NanjingFaults\\fault.shp");
+//        kgController.create(kgCreateRequest);
 
         //基金本子上的剖面图
-//        KGCreateRequest kgCreateRequest = new KGCreateRequest();
-////        kgCreateRequest.setFacePath("C:\\Users\\lab\\Desktop\\知识图谱地质事件时序推理\\Data\\StudyData\\StudyData\\stratas.shp");
-////        kgCreateRequest.setBoundaryPath("C:\\Users\\lab\\Desktop\\知识图谱地质事件时序推理\\Data\\StudyData\\StudyData\\boundary.shp");
-//        kgCreateRequest.setFacePath("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\StudyData\\StudyData\\stratas.shp");
-//        kgCreateRequest.setBoundaryPath("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\StudyData\\StudyData\\boundary.shp");
+        KGCreateRequest kgCreateRequest = new KGCreateRequest();
+//        kgCreateRequest.setFacePath("C:\\Users\\lab\\Desktop\\知识图谱地质事件时序推理\\Data\\StudyData\\StudyData\\stratas.shp");
+//        kgCreateRequest.setBoundaryPath("C:\\Users\\lab\\Desktop\\知识图谱地质事件时序推理\\Data\\StudyData\\StudyData\\boundary.shp");
+        kgCreateRequest.setFacePath("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\StudyData\\StudyData\\stratas.shp");
+        kgCreateRequest.setBoundaryPath("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\StudyData\\StudyData\\boundary.shp");
 
-//        kgController.createKG(kgCreateRequest);
+        kgController.create(kgCreateRequest);
 
         //五龙山剖面图
 //        kgController.createKG("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\五龙山剖面图\\剖面地层.shp",

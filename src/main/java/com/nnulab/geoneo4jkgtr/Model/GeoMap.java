@@ -1,9 +1,9 @@
 package com.nnulab.geoneo4jkgtr.Model;
 
-import com.nnulab.geoneo4jkgtr.Entity.Boundary;
-import com.nnulab.geoneo4jkgtr.Entity.Chronology;
-import com.nnulab.geoneo4jkgtr.Entity.Face;
-import com.nnulab.geoneo4jkgtr.Entity.GeoEvent;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Boundary;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Chronology;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Face;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.GeoEvent;
 import com.nnulab.geoneo4jkgtr.Util.GdalUtil;
 import lombok.Data;
 import org.gdal.ogr.Layer;

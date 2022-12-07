@@ -1,6 +1,6 @@
 package com.nnulab.geoneo4jkgtr.Dao;
 
-import com.nnulab.geoneo4jkgtr.Entity.Fault;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Fault;
 import org.springframework.data.neo4j.annotation.Query;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 import org.springframework.data.repository.query.Param;

@@ -3,6 +3,7 @@ package com.nnulab.geoneo4jkgtr.Controller;
 import com.nnulab.geoneo4jkgtr.Model.KnowledgeGraph;
 import com.nnulab.geoneo4jkgtr.Model.request.KGCreateRequest;
 import com.nnulab.geoneo4jkgtr.Service.KGService;
+import com.nnulab.geoneo4jkgtr.Service.OntologyService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
@@ -17,6 +18,8 @@ public class KGController {
 
     @Resource
     private KGService kgService;
+    @Resource
+    private OntologyService ontologyService;
 
     @CrossOrigin
     @PostMapping("/create")
@@ -36,7 +39,8 @@ public class KGController {
         kgService.CreateRelationshipBetweenFaces();
 
         //返回知识图谱全要素
-        return kgService.searchAllKG();
+//        return kgService.searchAllKG();
+        return null;
     }
 
     @CrossOrigin

@@ -1,10 +1,10 @@
 package com.nnulab.geoneo4jkgtr.Dao;
 
-import com.alibaba.fastjson.JSONObject;
-import com.nnulab.geoneo4jkgtr.Entity.Basic.BasicRelation;
-import com.nnulab.geoneo4jkgtr.Entity.Relationship.CuttingOffRelation;
-import com.nnulab.geoneo4jkgtr.Entity.Relationship.CuttingThroughRelation;
-import com.nnulab.geoneo4jkgtr.Entity.Relationship.MutuallyCuttingRelation;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Basic.BasicRelation;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Basic.ScenarioRelation;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Relations.CuttingOffRelation;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Relations.CuttingThroughRelation;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Relations.MutuallyCuttingRelation;
 import org.springframework.data.neo4j.annotation.Query;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 
@@ -313,7 +313,7 @@ public interface BasicRelationDao extends Neo4jRepository<BasicRelation, Long> {
     void inferTimeOfFaultsByStrata_1();
 
     @Query("MATCH ()-[r]->() RETURN r")
-    List<BasicRelation> searchAllRelationships();
+    List<ScenarioRelation> searchAllRelationships();
 
     @Query("MATCH (n) RETURN n")
     List<Object> searchAllNodes();
