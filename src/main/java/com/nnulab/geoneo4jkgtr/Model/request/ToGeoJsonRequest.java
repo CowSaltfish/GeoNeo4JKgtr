@@ -12,7 +12,7 @@ import java.io.Serializable;
 @Data
 public class ToGeoJsonRequest implements Serializable {
 
-    private static final long serialVersionUID = 1167006973621551056L;
+    private static final long serialVersionUID = -6489399826090075599L;
 
     private String sourcePath;
 
