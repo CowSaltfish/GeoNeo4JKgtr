@@ -39,11 +39,14 @@ public class OntologyController {
 
     @CrossOrigin
     @PostMapping("/updateOntology")
-    public long updateOntology(@RequestBody String ontologyName, @RequestBody String ontologyJson) {
+    public void updateOntology(@RequestBody String ontologyName, @RequestBody String ontologyJson) {
         if (StringUtils.isAnyBlank(ontologyName, ontologyJson)) {
-            return 0;
+            return;
         }
-        return ontologyService.updateOntology(ontologyName, ontologyJson);
+//        return ontologyService.updateOntology(ontologyName, ontologyJson);
+
+        ontologyService.deleteOntologyByName(ontologyName);
+        ontologyService.save(ontologyName, ontologyJson);
     }
 
     @CrossOrigin
