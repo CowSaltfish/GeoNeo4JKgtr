@@ -1,7 +1,10 @@
 package com.nnulab.geoneo4jkgtr.Util;
 
+import com.nnulab.geoneo4jkgtr.Model.Entity.Basic.BasicRelation;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Basic.ScenarioRelation;
 import com.nnulab.geoneo4jkgtr.Model.KnowledgeGraph;
+import org.neo4j.driver.internal.InternalNode;
+import org.neo4j.driver.internal.InternalRelationship;
 import org.neo4j.driver.v1.*;
 import org.neo4j.driver.v1.types.Node;
 import org.neo4j.driver.v1.types.Path;
@@ -9,8 +12,7 @@ import org.neo4j.driver.v1.types.Relationship;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Component
 public class Neo4jUtil {
@@ -35,7 +37,7 @@ public class Neo4jUtil {
     }
 
     /**
-     * 获取节点的信息
+     * 执行cypher返回结果
      *
      * @param cypher
      */
@@ -76,10 +78,16 @@ public class Neo4jUtil {
         }
     }
 
+    /**
+     * 解析结果路径
+     *
+     * @param result
+     * @return
+     */
     public KnowledgeGraph result2Path(StatementResult result) {
         KnowledgeGraph knowledgeGraph = new KnowledgeGraph();
-        List<ScenarioRelation> relationships = new ArrayList<ScenarioRelation>();
-        List<Object> nodes = new ArrayList<Object>();
+        List<ScenarioRelation> relationships = new ArrayList<>();
+        List<Object> nodes = new ArrayList<>();
         while (result.hasNext()) {
             Record record = result.next();
             for (org.neo4j.driver.v1.Value i : record.values()) {
@@ -90,7 +98,10 @@ public class Neo4jUtil {
                 }
                 //处理路径中的节点
                 for (Node node : path.nodes()) {
-                    nodes.add(node);
+                    Map<String, Object> nodeMap = node.asMap();
+                    Map<String, Object> nodeHashMap = new HashMap<>(nodeMap);
+                    nodeHashMap.put("id", node.id());
+                    nodes.add(nodeHashMap);
                 }
             }
         }
@@ -99,6 +110,12 @@ public class Neo4jUtil {
         return knowledgeGraph;
     }
 
+    /**
+     * 将Neo4j的关系转为地理场景关系
+     *
+     * @param relationship
+     * @return
+     */
     private ScenarioRelation Neo4jRelationship2ScenarioRelation(Relationship relationship) {
         ScenarioRelation sr = new ScenarioRelation();
         sr.setType(relationship.type());
@@ -111,5 +128,52 @@ public class Neo4jUtil {
             System.out.println(relKey + "-----" + relValue);
         }
         return sr;
+    }
+
+    /**
+     * cql 路径查询 返回节点和关系
+     *
+     * @param cql      查询语句
+     * @param nodeList 节点
+     * @param edgeList 关系
+     * @return List<Map < String, Object>>
+     */
+    public <T> void getPathList(String cql, Set<T> nodeList, Set<T> edgeList) {
+        GetDriver();
+        try {
+            Session session = driver.session();
+            StatementResult result = session.run(cql);
+            List<Record> list = result.list();
+            for (Record r : list) {
+                for (String index : r.keys()) {
+                    Path path = r.get(index).asPath();
+                    //节点
+                    Iterable<Node> nodes = path.nodes();
+                    for (Iterator iter = nodes.iterator(); iter.hasNext(); ) {
+                        InternalNode nodeInter = (InternalNode) iter.next();
+                        Map<String, Object> map = new HashMap<>();
+                        //节点上设置的属性
+                        map.putAll(nodeInter.asMap());
+                        //外加一个固定属性
+                        map.put("nodeId", nodeInter.id());
+                        nodeList.add((T) map);
+                    }
+                    //关系
+                    Iterable<Relationship> edges = path.relationships();
+                    for (Iterator iter = edges.iterator(); iter.hasNext(); ) {
+                        InternalRelationship relationInter = (InternalRelationship) iter.next();
+                        Map<String, Object> map = new HashMap<>();
+                        map.putAll(relationInter.asMap());
+                        //关系上设置的属性
+                        map.put("edgeId", relationInter.id());
+                        map.put("edgeFrom", relationInter.startNodeId());
+                        map.put("edgeTo", relationInter.endNodeId());
+                        edgeList.add((T) map);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }

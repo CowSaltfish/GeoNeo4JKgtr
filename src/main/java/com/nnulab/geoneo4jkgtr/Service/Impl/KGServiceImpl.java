@@ -232,6 +232,8 @@ public class KGServiceImpl implements KGService {
     public KnowledgeGraph searchByOntology(String ontologyName) {
         //基于本体名称获取本体
         KnowledgeGraph ontology = ontologyService.findByName(ontologyName);
+        if(ontology==null)
+            return null;
         //本体转为cypher
         String cypher = neo4jUtil.ontologyJson2Cypher(JSON.toJSONString(ontology));
         //查询返回子图

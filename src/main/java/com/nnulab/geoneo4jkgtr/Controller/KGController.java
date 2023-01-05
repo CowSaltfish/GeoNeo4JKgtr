@@ -63,7 +63,7 @@ public class KGController {
     }
 
     @CrossOrigin
-    @PostMapping("/searchByOntology")
+    @GetMapping("/searchByOntology")
     public KnowledgeGraph searchByOntology(@RequestBody String ontologyName) {
         if (StringUtils.isAnyBlank(ontologyName)) {
             return null;

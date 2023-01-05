@@ -12,6 +12,16 @@ public interface OntologyService {
 
     KnowledgeGraph findByName(String name);
 
+    /**
+     * 查找对称重复的地质构造
+     * @param name
+     * @return
+     */
+    KnowledgeGraph findSymmetricRepetition(String name);
+
+    KnowledgeGraph findAsymmetricDuplication(String name);
+
+
     long updateOntology(String ontologyName, String ontologyJson);
 
     void deleteOntologyByName(String name);

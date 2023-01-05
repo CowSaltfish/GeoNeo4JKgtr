@@ -28,6 +28,6 @@ public class KGServiceTest extends TestCase {
 
     @Test
     public void testSearchByOntology() {
-        kgService.searchByOntology("testOntology");
+        kgService.searchByOntology("testOntology1");
     }
 }

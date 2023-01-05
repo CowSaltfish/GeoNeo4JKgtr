@@ -61,12 +61,15 @@ public class GdalUtil {
     public static void loadFromResource(String file) throws IOException {
         try {
             //获取系统路径
+//            String[] libraryPaths = initializePath("user.dir");
             String[] libraryPaths = initializePath("java.library.path");
+
             //log.info("---LibraryUtil-----java.library.path={}",StringUtil.join(";", libraryPaths));
             if (libraryPaths == null || libraryPaths.length == 0) {
                 log.info("---LibraryUtil--请设置环境变量java.library.path");
                 return;
             }
+//            String nativeTempDir = libraryPaths[0]+ File.separator + "src\\main\\resources\\gdal\\win32";
             String nativeTempDir = libraryPaths[0];
 
             int sepIndex = file.lastIndexOf(File.separator);
@@ -96,6 +99,7 @@ public class GdalUtil {
             log.info("---LibraryUtil--mapLibraryName={}", mapLibraryName);
             //输出调试信息
             log.info("---LibraryUtil--系统加载动态库{}开始", libName);
+//            System.load("C:/Users/13222/.jdks/corretto-11.0.14.1/bin/" + libName + ".dll");
             System.loadLibrary(libName);
             log.info("---LibraryUtil--系统加载动态库{}完成", libName);
         } catch (Exception ex) {

@@ -5,6 +5,7 @@ import com.nnulab.geoneo4jkgtr.Model.Entity.Basic.ScenarioRelation;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Relations.CuttingOffRelation;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Relations.CuttingThroughRelation;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Relations.MutuallyCuttingRelation;
+import org.neo4j.driver.v1.types.Path;
 import org.springframework.data.neo4j.annotation.Query;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
 
@@ -152,7 +153,8 @@ public interface BasicRelationDao extends Neo4jRepository<BasicRelation, Long> {
      * 基于弧段，构建地层间邻接关系
      */
     @Query("match (b:Boundary)-[r1:BELONG]->(s1:Face)\n" +
-            "where not exists((b)-[:BELONG]->(:Fault)) and r1.belongType <> 'outer' and  r1.belongType <> 'inner' \n" +
+//            "where not exists((b)-[:BELONG]->(:Fault)) and r1.belongType <> 'outer' and  r1.belongType <> 'inner' \n" +
+            "where r1.belongType <> 'outer' and  r1.belongType <> 'inner' \n" +
             "with b,s1,r1 \n" +
             "match (b)-[r2:BELONG]->(s2:Face) \n" +
             "where s1.fid <> s2.fid and r2.belongType <> 'outer' and  r2.belongType <> 'inner' \n" +
@@ -166,7 +168,7 @@ public interface BasicRelationDao extends Neo4jRepository<BasicRelation, Long> {
      *  则两地层邻接
      */
     @Query("match (b:Boundary)-[:BELONG]->(s1:Face) " +
-            "where not exists((b)-[:BELONG]->(:Fault))" +
+//            "where not exists((b)-[:BELONG]->(:Fault))" +
             "with b,s1 " +
             "match (b)-[:BELONG]->(s2:Face) " +
             "where s1.fid <> s2.fid and s1.type = 'Sedimentary' and s2.type = 'Sedimentary'" +
@@ -317,6 +319,30 @@ public interface BasicRelationDao extends Neo4jRepository<BasicRelation, Long> {
 
     @Query("MATCH (n) RETURN n")
     List<Object> searchAllNodes();
+
+    @Query("match (b:Boundary)-[:BELONG]->(:Face)\n" +
+            "match p=(b)-[:BELONG]->(:Face)\n" +
+            "with count(p) as cp,b\n" +
+            "where cp=1\n" +
+            "with b\n" +
+            "match (b)-[:BELONG]->(f1:Face)\n" +
+            "with f1\n" +
+            "match (b:Boundary)-[:BELONG]->(:Face)\n" +
+            "match p=(b)-[:BELONG]->(:Face)\n" +
+            "with count(p) as cp,p,b,f1\n" +
+            "where cp=1\n" +
+            "with b,f1\n" +
+            "match (b)-[:BELONG]->(f2:Face)\n" +
+            "with f1,f2\n" +
+            "where f1.nodeName=f2.nodeName\n" +
+            "match p=(f1:Face)-[:ADJACENT*4]-(f2:Face) \n" +
+            "with nodes(p) as nps,f1,f2,p\n" +
+            "where SIZE(apoc.coll.toSet(nps)) = LENGTH(p) + 1\n" +
+            "unwind nps as np1\n" +
+            "with size(collect(distinct np1.nodeName)) as distinctNpName,f1,f2,nps,p\n" +
+            "where (length(p)+1)/2+1=distinctNpName\n" +
+            "return p skip 0 limit 100")
+    List<Path> GetStrataList();
 
     /**
      * 将一对多地层接触的两个不同年代地层的接触关系由普通地层接触改为角度不整合接触

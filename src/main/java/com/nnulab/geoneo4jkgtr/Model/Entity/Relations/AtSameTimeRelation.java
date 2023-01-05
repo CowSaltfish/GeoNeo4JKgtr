@@ -1,6 +1,5 @@
 package com.nnulab.geoneo4jkgtr.Model.Entity.Relations;
 
-import com.nnulab.geoneo4jkgtr.Model.Entity.Basic.BasicRelation;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Basic.BasicRelationInterface;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Basic.GeoNode;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Basic.ScenarioRelation;
@@ -11,22 +10,22 @@ import org.neo4j.ogm.annotation.RelationshipEntity;
 
 /**
  * @author : LiuXianYu
- * @date : 2022/4/15 16:28
+ * @date : 2023/1/5 17:40
  */
-@RelationshipEntity(type = "SUBJECT")
-public class SubjectRelation  extends ScenarioRelation implements BasicRelationInterface {
+@RelationshipEntity(type = "ATSAMETIME")
+public class AtSameTimeRelation extends ScenarioRelation implements BasicRelationInterface {
     @Property
-    private String relationName = "发生于";
+    private String relationName = "同时发生";
 
-    public SubjectRelation() {
+    public AtSameTimeRelation() {
 
     }
 
-    public <T extends GeoNode> SubjectRelation(T source, Face target) {
+    public <T extends GeoNode> AtSameTimeRelation(T source, Face target) {
         super(source, target);
     }
 
-    public <T extends GeoNode> SubjectRelation(T source, Fault target) {
+    public <T extends GeoNode> AtSameTimeRelation(T source, Fault target) {
         super(source, target);
     }
 
@@ -34,4 +33,5 @@ public class SubjectRelation  extends ScenarioRelation implements BasicRelationI
     public String getRelationName() {
         return relationName;
     }
+
 }

@@ -12,15 +12,15 @@ import org.neo4j.ogm.annotation.RelationshipEntity;
  * @date : 2022/11/12 22:21
  */
 @RelationshipEntity(type = "DISTANCE")
-public class DistanceRelationship extends ScenarioRelation implements BasicRelationInterface {
+public class DistanceRelation extends ScenarioRelation implements BasicRelationInterface {
     @Property
     private String relationName = "距离";
 
-    public DistanceRelationship() {
+    public DistanceRelation() {
 
     }
 
-    public <T extends GeoNode> DistanceRelationship(T source, Boundary target) {
+    public <T extends GeoNode> DistanceRelation(T source, Boundary target) {
         super(source, target);
     }
 

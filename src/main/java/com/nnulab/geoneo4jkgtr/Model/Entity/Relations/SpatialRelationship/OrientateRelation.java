@@ -12,15 +12,15 @@ import org.neo4j.ogm.annotation.RelationshipEntity;
  * @date : 2022/11/12 22:21
  */
 @RelationshipEntity(type = "ORIENTATION")
-public class OrientateRelationship extends ScenarioRelation implements BasicRelationInterface {
+public class OrientateRelation extends ScenarioRelation implements BasicRelationInterface {
     @Property
     private String relationName = "方向";
 
-    public OrientateRelationship() {
+    public OrientateRelation() {
 
     }
 
-    public <T extends GeoNode> OrientateRelationship(T source, Boundary target) {
+    public <T extends GeoNode> OrientateRelation(T source, Boundary target) {
         super(source, target);
     }
 
