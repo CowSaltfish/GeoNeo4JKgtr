@@ -6,6 +6,7 @@ import com.nnulab.geoneo4jkgtr.Service.KGService;
 import com.nnulab.geoneo4jkgtr.Service.OntologyService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
+
 import javax.annotation.Resource;
 
 /**
@@ -52,6 +53,7 @@ public class KGController {
 
     /**
      * cypher查询
+     *
      * @param cypher
      * @return
      */
@@ -62,6 +64,12 @@ public class KGController {
         return kgService.search(cypher);
     }
 
+    /**
+     * 本体查询
+     *
+     * @param ontologyName 本体名
+     * @return 查询结果
+     */
     @CrossOrigin
     @GetMapping("/searchByOntology")
     public KnowledgeGraph searchByOntology(@RequestBody String ontologyName) {
@@ -70,11 +78,6 @@ public class KGController {
         }
         return kgService.searchByOntology(ontologyName);
     }
-
-
-
-
-
 
 
 

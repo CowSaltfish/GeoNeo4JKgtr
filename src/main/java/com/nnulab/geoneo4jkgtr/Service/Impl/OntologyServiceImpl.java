@@ -74,24 +74,70 @@ public class OntologyServiceImpl implements OntologyService {
                 "where (length(p)+1)/2+1=distinctNpName\n" +
                 "return p skip 0 limit 100";
         //待返回的值，与cql return后的值顺序对应
-        Set<Map<String ,Object>> nodeList = new HashSet<>();
-        Set<Map<String ,Object>> edgeList = new HashSet<>();
-        neo4jUtil.getPathList(cql,nodeList,edgeList);
-        retMap.put("nodeList",nodeList);
-        retMap.put("edgeList",edgeList);
-
-
-        //排除时代不连续的链
-
-        //划分邻接地层时代重复的地层链
-
-        //排除不同线的地层链
-
-        //判断地层链对称性
-
-        //排除对称地层邻接的
-
+        List<Map<String, Object>> nodeList = new ArrayList<>();
+        List<Map<String, Object>> edgeList = new ArrayList<>();
+        List<List<Map<String, Object>>> pathList = neo4jUtil.getPathList(cql, nodeList, edgeList);
+        retMap.put("nodeList", nodeList);
+        retMap.put("edgeList", edgeList);
+        int count = nodeList.size();
+        int countOfSymmetricRepetition = 0;
+        for (int i = 0; i < count; i++) {
+            List<Map<String, Object>> nodesList = pathList.get(i);
+            //核部最老或最新
+            if(!oldestOrNewestNuclearDepartment(nodesList)){
+                continue;
+            }
+            //时代连续
+            if(!continuousTimes(nodesList)){
+                continue;
+            }
+            //邻接地层时代皆不相同
+            if(AdjacentStrataSameAge(nodesList)){
+                continue;
+            }
+            //地层链同线
+            if(!StrataChainCollinear(nodesList)){
+                continue;
+            }
+            //地层链对称
+            if(!StrataChainSymmetry(nodesList)){
+                continue;
+            }
+            //排除对称地层邻接的
+            if(symmetricalAdjacentStrata(nodesList)){
+                continue;
+            }
+            //记录对称重复地层链
+            ++countOfSymmetricRepetition;
+        }
+        if (countOfSymmetricRepetition == 0)
+            return null;
+        //返回相关地层
         return null;
+    }
+
+    private boolean symmetricalAdjacentStrata(List<Map<String, Object>> nodesList) {
+        return false;
+    }
+
+    private boolean StrataChainSymmetry(List<Map<String, Object>> nodesList) {
+        return false;
+    }
+
+    private boolean StrataChainCollinear(List<Map<String, Object>> nodesList) {
+        return false;
+    }
+
+    private boolean AdjacentStrataSameAge(List<Map<String, Object>> nodesList) {
+        return false;
+    }
+
+    private boolean continuousTimes(List<Map<String, Object>> nodesList) {
+        return false;
+    }
+
+    private boolean oldestOrNewestNuclearDepartment(List<Map<String, Object>> nodesList) {
+        return false;
     }
 
     @Override

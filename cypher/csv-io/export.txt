@@ -1,0 +1,13 @@
+--导出节点--
+MATCH (n:Face)
+with collect(n) as cs
+call apoc.export.csv.data([],cs,"faces.csv",{})
+YIELD file, source, format, nodes, relationships, properties, time, rows, batchSize, batches, done, data
+RETURN file, source, format, nodes, relationships, properties, time, rows, batchSize, batches, done, data
+
+--导出关系--
+MATCH ()-[r:CONTAINS]->()
+with collect(r) as cs
+call apoc.export.csv.data([],cs,"contains.csv",{})
+YIELD file, source, format, nodes, relationships, properties, time, rows, batchSize, batches, done, data
+RETURN file, source, format, nodes, relationships, properties, time, rows, batchSize, batches, done, data

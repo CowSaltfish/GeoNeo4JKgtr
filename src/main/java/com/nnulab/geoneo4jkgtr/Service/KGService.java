@@ -12,6 +12,7 @@ import com.nnulab.geoneo4jkgtr.Model.Entity.Relations.MutuallyCuttingRelation;
 import com.nnulab.geoneo4jkgtr.Model.KnowledgeGraph;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author : LiuXianYu
@@ -36,6 +37,8 @@ public interface KGService {
     long getFaultCount();
 
     Boundary findBoundaryById(long id);
+
+    Map<Integer, Boundary> findAllBoundaryMap();
 
     List<Boundary> findBoundaryByFid(int fid);
 

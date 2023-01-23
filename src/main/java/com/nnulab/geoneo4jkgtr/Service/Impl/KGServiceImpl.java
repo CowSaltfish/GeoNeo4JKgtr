@@ -28,8 +28,7 @@ import org.neo4j.driver.v1.types.Relationship;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author : LiuXianYu
@@ -110,6 +109,17 @@ public class KGServiceImpl implements KGService {
     @Override
     public Boundary findBoundaryById(long id) {
         return boundaryDao.findOne(id);
+    }
+
+    @Override
+    public Map<Integer, Boundary> findAllBoundaryMap() {
+        Map<Integer, Boundary> boundaryMap = new HashMap<>();
+        long boundaryCount = boundaryDao.count();
+
+        for (Boundary boundary : boundaryDao.findAll(0)) {
+            boundaryMap.put(boundary.getFid(), boundary);
+        }
+        return boundaryMap;
     }
 
     @Override
@@ -232,7 +242,7 @@ public class KGServiceImpl implements KGService {
     public KnowledgeGraph searchByOntology(String ontologyName) {
         //基于本体名称获取本体
         KnowledgeGraph ontology = ontologyService.findByName(ontologyName);
-        if(ontology==null)
+        if (ontology == null)
             return null;
         //本体转为cypher
         String cypher = neo4jUtil.ontologyJson2Cypher(JSON.toJSONString(ontology));
@@ -318,18 +328,18 @@ public class KGServiceImpl implements KGService {
             geoMap.addFace(face);
 
             //形成事件存入库中，并建立地层-形成事件的关系
-            GeoEvent geoEvent;
-            List<GeoEvent> geoEvents;
-            if (geoMap.getEvents().containsKey(face.getNodeName()))
-                saveRelation(new SubjectRelation(geoMap.getEvents().get(face.getNodeName()), face));
-            else if (!(geoEvents = findGeoEventBySubjectName(face.getNodeName())).isEmpty()) {
-                saveRelation(new SubjectRelation(geoEvents.get(0), face));
-            } else {
-                geoEvent = new GeoEvent(face);
-                geoMap.addEvent(geoEvent);
-                saveNode(geoEvent);
-                saveRelation(new SubjectRelation(geoEvent, face));
-            }
+//            GeoEvent geoEvent;
+//            List<GeoEvent> geoEvents;
+//            if (geoMap.getEvents().containsKey(face.getNodeName()))
+//                saveRelation(new SubjectRelation(geoMap.getEvents().get(face.getNodeName()), face));
+//            else if (!(geoEvents = findGeoEventBySubjectName(face.getNodeName())).isEmpty()) {
+//                saveRelation(new SubjectRelation(geoEvents.get(0), face));
+//            } else {
+//                geoEvent = new GeoEvent(face);
+//                geoMap.addEvent(geoEvent);
+//                saveNode(geoEvent);
+//                saveRelation(new SubjectRelation(geoEvent, face));
+//            }
         }
     }
 
@@ -406,26 +416,37 @@ public class KGServiceImpl implements KGService {
      */
     private void createTopoOfBoundaries(Layer boundaryLayer) {
         Feature feature;
-        Geometry boundaryGeo;
+        Geometry boundaryGeoI, boundaryGeoJ;
         Boundary boundaryi = null, boundaryj = null;
         List<Boundary> boundariesi, boundariesj;
         long numFeature = boundaryLayer.GetFeatureCount(0);
+        Map<Integer, Boundary> boundaryMap = findAllBoundaryMap();
 
         for (int i = 0; i < numFeature - 1; ++i) {
             feature = boundaryLayer.GetFeature(i);
-            boundaryGeo = feature.GetGeometryRef();
+            boundaryGeoI = feature.GetGeometryRef();
             for (int j = i + 1; j < numFeature; ++j) {
-                if (boundaryGeo.Buffer(0.001).Intersect(boundaryLayer.GetFeature(j).GetGeometryRef().Buffer(0.001))) {
+                boundaryGeoJ = boundaryLayer.GetFeature(j).GetGeometryRef();
+                if ((Math.abs(boundaryGeoI.GetX(0) - boundaryGeoJ.GetX(0)) <= 0.001
+                        && Math.abs(boundaryGeoI.GetY(0) - boundaryGeoJ.GetY(0)) <= 0.001)
+                        || (Math.abs(boundaryGeoI.GetX(boundaryGeoI.GetPointCount() - 1) - boundaryGeoJ.GetX(boundaryGeoJ.GetPointCount() - 1)) <= 0.001
+                        && Math.abs(boundaryGeoI.GetY(boundaryGeoI.GetPointCount() - 1) - boundaryGeoJ.GetY(boundaryGeoJ.GetPointCount() - 1)) <= 0.001)
+                        || (Math.abs(boundaryGeoI.GetX(0) - boundaryGeoJ.GetX(boundaryGeoJ.GetPointCount() - 1)) <= 0.001
+                        && Math.abs(boundaryGeoI.GetY(0) - boundaryGeoJ.GetY(boundaryGeoJ.GetPointCount() - 1)) <= 0.001)
+                        || (Math.abs(boundaryGeoI.GetX(boundaryGeoI.GetPointCount() - 1) - boundaryGeoJ.GetX(0)) <= 0.001
+                        && Math.abs(boundaryGeoI.GetY(boundaryGeoI.GetPointCount() - 1) - boundaryGeoJ.GetY(0)) <= 0.001)) {
+//                if (boundaryGeoI.Buffer(0.001).Intersect(boundaryLayer.GetFeature(j).GetGeometryRef().Buffer(0.001))) {
                     if (geoMap.getBoundaries().size() > i)
                         boundaryi = geoMap.getBoundaries().get(i);
-                    else if (!(boundariesi = findBoundaryByFid(i)).isEmpty())
-                        boundaryi = boundariesi.get(0);
+//                    else if (!(boundariesi = findBoundaryByFid(i)).isEmpty())
+                    else if (boundaryMap.containsKey(i))
+                        boundaryi = boundaryMap.get(i);
                     if (geoMap.getBoundaries().size() > j)
                         boundaryj = geoMap.getBoundaries().get(j);
-                    else if (!(boundariesj = findBoundaryByFid(j)).isEmpty())
-                        boundaryj = boundariesj.get(0);
+                    else if (boundaryMap.containsKey(j))
+                        boundaryj = boundaryMap.get(j);
                     if (boundaryi != null && boundaryj != null) {
-                        System.out.print("添加边界邻接关系:");
+//                        System.out.print("添加边界邻接关系:");
                         saveRelation(new AdjacentRelation(boundaryi, boundaryj));
                         saveRelation(new AdjacentRelation(boundaryj, boundaryi));
                     }

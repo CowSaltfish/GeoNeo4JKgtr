@@ -36,12 +36,12 @@ public class KGControllerTest {
 //        kgController.create(kgCreateRequest);
 
         //基金本子上的剖面图
-        KGCreateRequest kgCreateRequest = new KGCreateRequest();
-//        kgCreateRequest.setFacePath("C:\\Users\\lab\\Desktop\\知识图谱地质事件时序推理\\Data\\StudyData\\StudyData\\stratas.shp");
-//        kgCreateRequest.setBoundaryPath("C:\\Users\\lab\\Desktop\\知识图谱地质事件时序推理\\Data\\StudyData\\StudyData\\boundary.shp");
-        kgCreateRequest.setFacePath("D:\\13222\\Desktop\\DesktopFiles\\ExperimentData\\MyProject\\KGTR\\data\\StudyData\\StudyData\\stratas.shp");
-        kgCreateRequest.setBoundaryPath("D:\\13222\\Desktop\\DesktopFiles\\ExperimentData\\MyProject\\KGTR\\data\\StudyData\\StudyData\\boundary.shp");
-        kgController.create(kgCreateRequest);
+//        KGCreateRequest kgCreateRequest = new KGCreateRequest();
+////        kgCreateRequest.setFacePath("C:\\Users\\lab\\Desktop\\知识图谱地质事件时序推理\\Data\\StudyData\\StudyData\\stratas.shp");
+////        kgCreateRequest.setBoundaryPath("C:\\Users\\lab\\Desktop\\知识图谱地质事件时序推理\\Data\\StudyData\\StudyData\\boundary.shp");
+//        kgCreateRequest.setFacePath("D:\\13222\\Desktop\\DesktopFiles\\ExperimentData\\MyProject\\KGTR\\data\\StudyData\\StudyData\\stratas.shp");
+//        kgCreateRequest.setBoundaryPath("D:\\13222\\Desktop\\DesktopFiles\\ExperimentData\\MyProject\\KGTR\\data\\StudyData\\StudyData\\boundary.shp");
+//        kgController.create(kgCreateRequest);
 
         //五龙山剖面图
 //        kgController.createKG("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\五龙山剖面图\\剖面地层.shp",
@@ -57,10 +57,17 @@ public class KGControllerTest {
 //        kgCreateRequest.setBoundaryPath("D:\\13222\\Desktop\\DesktopFiles\\ExperimentData\\MyProject\\KGTR\\data\\qinglongshan\\boundaries1015.shp");
 //        kgController.create(kgCreateRequest);
 
+        //褶皱识别
 //        KGCreateRequest kgCreateRequest = new KGCreateRequest();
 //        kgCreateRequest.setFacePath("D:\\13222\\Desktop\\DesktopFiles\\ExperimentData\\MyProject\\KGTR\\data\\FoldIdentify\\strata.shp");
 //        kgCreateRequest.setBoundaryPath("D:\\13222\\Desktop\\DesktopFiles\\ExperimentData\\MyProject\\KGTR\\data\\FoldIdentify\\boundaries.shp");
 //        kgController.create(kgCreateRequest);
+
+        //南京矢量地质图
+        KGCreateRequest kgCreateRequest = new KGCreateRequest();
+        kgCreateRequest.setFacePath("D:\\13222\\Desktop\\DesktopFiles\\ExperimentData\\MyProject\\KGTR\\data\\Nanjing\\Nanjing\\strata1.shp");
+        kgCreateRequest.setBoundaryPath("D:\\13222\\Desktop\\DesktopFiles\\ExperimentData\\MyProject\\KGTR\\data\\Nanjing\\Nanjing\\boundaries.shp");
+        kgController.create(kgCreateRequest);
 
     }
 

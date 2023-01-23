@@ -1,0 +1,6 @@
+--导入节点--
+LOAD CSV WITH HEADERS FROM "file:///faces.csv" AS line CREATE (:BasicNode:Face:ScenarioNode {_id:line._id,
+_labels:line._labels,added: toInteger(line.added),area: toFloat(line.area),center_y:
+toInteger(line. center_y),envelope: line.envelope,fid:line.fid,geometryForm:line.geometryForm,
+labelName: line.labelName,length: toInteger(line.length),nodeName:line.nodeName,
+ratioLongShortAxis: line.ratioLongShortAxis})

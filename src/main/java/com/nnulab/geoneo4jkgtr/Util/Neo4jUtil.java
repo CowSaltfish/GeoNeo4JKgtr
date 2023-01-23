@@ -138,8 +138,9 @@ public class Neo4jUtil {
      * @param edgeList 关系
      * @return List<Map < String, Object>>
      */
-    public <T> void getPathList(String cql, Set<T> nodeList, Set<T> edgeList) {
+    public <T> List<List<Map<String, Object>>> getPathList(String cql, List<T> nodeList, List<T> edgeList) {
         GetDriver();
+        List<List<Map<String, Object>>> nodesOfPathList = new ArrayList<>();
         try {
             Session session = driver.session();
             StatementResult result = session.run(cql);
@@ -149,31 +150,39 @@ public class Neo4jUtil {
                     Path path = r.get(index).asPath();
                     //节点
                     Iterable<Node> nodes = path.nodes();
+                    Map<Long, Map<String, Object>> nodesMap = new HashMap<>();
+                    List<Map<String, Object>> nodesList = new ArrayList<>();
                     for (Iterator iter = nodes.iterator(); iter.hasNext(); ) {
                         InternalNode nodeInter = (InternalNode) iter.next();
-                        Map<String, Object> map = new HashMap<>();
+                        Map<String, Object> nodeMap = new HashMap<>();
                         //节点上设置的属性
-                        map.putAll(nodeInter.asMap());
+                        nodeMap.putAll(nodeInter.asMap());
                         //外加一个固定属性
-                        map.put("nodeId", nodeInter.id());
-                        nodeList.add((T) map);
+                        nodeMap.put("nodeId", nodeInter.id());
+                        nodesMap.put(nodeInter.id(), nodeMap);
+                        nodesList.add(nodeMap);
                     }
+                    nodesOfPathList.add(nodesList);
+                    nodeList.add((T) nodesMap);
                     //关系
                     Iterable<Relationship> edges = path.relationships();
+                    Map<Long, Map<String, Object>> relationsMap = new HashMap<>();
                     for (Iterator iter = edges.iterator(); iter.hasNext(); ) {
                         InternalRelationship relationInter = (InternalRelationship) iter.next();
-                        Map<String, Object> map = new HashMap<>();
-                        map.putAll(relationInter.asMap());
+                        Map<String, Object> relationMap = new HashMap<>();
+                        relationMap.putAll(relationInter.asMap());
                         //关系上设置的属性
-                        map.put("edgeId", relationInter.id());
-                        map.put("edgeFrom", relationInter.startNodeId());
-                        map.put("edgeTo", relationInter.endNodeId());
-                        edgeList.add((T) map);
+                        relationMap.put("edgeId", relationInter.id());
+                        relationMap.put("edgeFrom", relationInter.startNodeId());
+                        relationMap.put("edgeTo", relationInter.endNodeId());
+                        relationsMap.put(relationInter.id(), relationMap);
                     }
+                    edgeList.add((T) relationsMap);
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return nodesOfPathList;
     }
 }

@@ -30,4 +30,9 @@ public class KGServiceTest extends TestCase {
     public void testSearchByOntology() {
         kgService.searchByOntology("testOntology1");
     }
+
+    @Test
+    public void testFindAllBoundaryMap() {
+        kgService.findAllBoundaryMap();
+    }
 }
