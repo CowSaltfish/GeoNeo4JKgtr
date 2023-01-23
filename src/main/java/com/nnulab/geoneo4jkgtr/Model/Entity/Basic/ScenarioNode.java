@@ -6,6 +6,8 @@ import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Vertex;
 import lombok.Data;
 import org.neo4j.ogm.annotation.Property;
 
+import java.util.Map;
+
 /**
  * @author : LiuXianYu
  * @date : 2022/11/30 21:17
@@ -54,6 +56,11 @@ public class ScenarioNode extends BasicNode {
      */
     @Property
     private String times;
+    /**
+     * 理化属性（主要是属性表中的属性）
+     */
+    private Map<String, Object> Attribute;
+
 
 //    @Relationship(type = "SCENARIO_RELATION", direction = Relationship.UNDIRECTED)
 //    private Set<ScenarioRelation> scenarioRelations;

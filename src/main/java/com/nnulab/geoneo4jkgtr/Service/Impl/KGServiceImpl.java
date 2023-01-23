@@ -4,6 +4,7 @@ import com.alibaba.fastjson.JSON;
 import com.nnulab.geoneo4jkgtr.Dao.*;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Basic.BasicNode;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Basic.BasicRelation;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Basic.ScenarioNode;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Basic.ScenarioRelation;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Enum.StratumType;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Boundary;
@@ -18,9 +19,7 @@ import com.nnulab.geoneo4jkgtr.Service.KGService;
 import com.nnulab.geoneo4jkgtr.Service.OntologyService;
 import com.nnulab.geoneo4jkgtr.Util.Neo4jUtil;
 import com.nnulab.geoneo4jkgtr.Util.TopologyUtil;
-import org.gdal.ogr.Feature;
-import org.gdal.ogr.Geometry;
-import org.gdal.ogr.Layer;
+import org.gdal.ogr.*;
 import org.neo4j.driver.v1.Record;
 import org.neo4j.driver.v1.StatementResult;
 import org.neo4j.driver.v1.types.Path;
@@ -39,6 +38,9 @@ public class KGServiceImpl implements KGService {
 
     @Resource
     private BasicNodeDao<BasicNode> basicNodeDao;
+
+    @Resource
+    private ScenarioNodeDao scenarioNodeDao;
 
     @Resource
     private BasicRelationDao relationDao;
@@ -67,7 +69,17 @@ public class KGServiceImpl implements KGService {
     @Override
     public <T extends BasicNode> T saveNode(T node) {
         basicNodeDao.save(node);
+        if (node instanceof ScenarioNode) {
+            saveAttributes((ScenarioNode) node);
+        }
         return node;
+    }
+
+    private void saveAttributes(ScenarioNode node) {
+        Map<String, Object> attributes = node.getAttribute();
+        for (Map.Entry<String, Object> entry : attributes.entrySet()) {
+            scenarioNodeDao.putAttribute(node.getId(), entry.getKey(), entry.getValue());
+        }
     }
 
     @Override
@@ -284,13 +296,19 @@ public class KGServiceImpl implements KGService {
 
     private void saveFaces() {
         Layer faceLayer = geoMap.getFaceLayer();
+
         if (null == faceLayer) {
             System.out.println("无面图层！");
             return;
         }
+//        faceLayer.GetLayerDefn().GetFieldDefn(0).GetName()
+        FeatureDefn featureDefn = faceLayer.GetLayerDefn();
+        int fieldCount = featureDefn.GetFieldCount();
+
         long numFeature = faceLayer.GetFeatureCount(0);
         Feature feature;
         double[] env = new double[4];
+        Map<String, Object> attributeMap;
 
         //创建地层节点
         for (int i = 0; i < numFeature; ++i) {
@@ -317,6 +335,23 @@ public class KGServiceImpl implements KGService {
             } else {
                 face.setNodeName(Integer.toString(i));
             }
+
+            attributeMap = new HashMap<>();
+            for (int j = 0; j < fieldCount; j++) {
+                FieldDefn fieldDefn = featureDefn.GetFieldDefn(j);
+                int fieldTypeCode = fieldDefn.GetFieldType();
+                switch (fieldTypeCode) {
+                    case 2:
+                        attributeMap.put(fieldDefn.GetName(), feature.GetFieldAsDouble(j));
+                    case 12:
+                    case 0:
+                        attributeMap.put(fieldDefn.GetName(), feature.GetFieldAsInteger(j));
+                    case 4:
+                    default:
+                        attributeMap.put(fieldDefn.GetName(), feature.GetFieldAsString(j));
+                }
+            }
+            face.setAttribute(attributeMap);
 
 //            Geometry pointsGeometry = feature.GetGeometryRef().GetGeometryRef(0);
 //            for (int j = 0; j < pointsGeometry.GetPointCount(); ++j) {
