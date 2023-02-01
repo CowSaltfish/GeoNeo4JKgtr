@@ -34,14 +34,11 @@ public class KGController {
 //            return null;
 //        }
 
-        //节点生成
-        kgService.createNodes(facePath, boundaryPath);
-        //构建要素时空关系(邻接、方向、距离)、角度
-        kgService.CreateRelationshipBetweenFaces();
+        kgService.create(facePath, boundaryPath);
 
         //返回知识图谱全要素
-//        return kgService.searchAllKG();
-        return null;
+        return kgService.searchAllKG();
+//        return null;
     }
 
     @CrossOrigin

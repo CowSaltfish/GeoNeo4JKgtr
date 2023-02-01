@@ -16,6 +16,7 @@ public class FileController {
 //        String suffix = fileName.substring(fileName.lastIndexOf('.'));
 //        String newFileName = new Date().getTime() + suffix;
         String path = "C:\\Users\\lab\\Desktop\\Project\\GeoNeo4JKgtr\\src\\main\\resources\\static\\shp";
+//        String path = "static/shp";
         File newFile = new File(path +"/"+ fileName);
         try {
             file.transferTo(newFile);

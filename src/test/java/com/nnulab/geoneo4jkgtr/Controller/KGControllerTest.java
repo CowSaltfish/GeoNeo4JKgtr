@@ -65,8 +65,8 @@ public class KGControllerTest {
 
         //南京矢量地质图
         KGCreateRequest kgCreateRequest = new KGCreateRequest();
-        kgCreateRequest.setFacePath("D:\\13222\\Desktop\\DesktopFiles\\ExperimentData\\MyProject\\KGTR\\data\\Nanjing\\Nanjing\\strata1.shp");
-        kgCreateRequest.setBoundaryPath("D:\\13222\\Desktop\\DesktopFiles\\ExperimentData\\MyProject\\KGTR\\data\\Nanjing\\Nanjing\\boundaries.shp");
+        kgCreateRequest.setFacePath("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\Nanjing\\Nanjing\\strata1.shp");
+        kgCreateRequest.setBoundaryPath("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\Nanjing\\Nanjing\\boundaries.shp");
         kgController.create(kgCreateRequest);
 
     }
@@ -128,8 +128,8 @@ public class KGControllerTest {
 
     /**
      * 基于地层间地质接触关系，推断沉积岩生成序列
-     * 基于断层与地层接触关系，推断断层发育时间
      * 基于侵入岩与地层接触关系，推断侵入岩发育时间
+     * 基于断层与地层接触关系，推断断层发育时间
      *
      * @throws Exception
      */

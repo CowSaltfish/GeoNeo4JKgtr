@@ -11,8 +11,6 @@ import java.io.Serializable;
 @Data
 public class OntologyRequest implements Serializable {
     private static final long serialVersionUID = -7851974448652861121L;
-
     private String name;
-
     private String ontologyJson;
 }

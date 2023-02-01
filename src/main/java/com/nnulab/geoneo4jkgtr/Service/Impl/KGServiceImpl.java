@@ -77,6 +77,9 @@ public class KGServiceImpl implements KGService {
 
     private void saveAttributes(ScenarioNode node) {
         Map<String, Object> attributes = node.getAttribute();
+        if (attributes == null) {
+            System.out.println();
+        }
         for (Map.Entry<String, Object> entry : attributes.entrySet()) {
             scenarioNodeDao.putAttribute(node.getId(), entry.getKey(), entry.getValue());
         }
@@ -152,6 +155,14 @@ public class KGServiceImpl implements KGService {
     @Override
     public List<MutuallyCuttingRelation> inferMutuallyCuttingRelationOnFaults() {
         return relationDao.inferMutuallyCuttingRelationOnFaults();
+    }
+
+    @Override
+    public void create(String facePath, String boundaryPath) {
+        //节点生成
+        createNodes(facePath, boundaryPath);
+        //构建要素时空关系(邻接、方向、距离)、角度
+        CreateRelationshipBetweenFaces();
     }
 
     @Override
@@ -301,14 +312,11 @@ public class KGServiceImpl implements KGService {
             System.out.println("无面图层！");
             return;
         }
-//        faceLayer.GetLayerDefn().GetFieldDefn(0).GetName()
         FeatureDefn featureDefn = faceLayer.GetLayerDefn();
-        int fieldCount = featureDefn.GetFieldCount();
 
         long numFeature = faceLayer.GetFeatureCount(0);
         Feature feature;
         double[] env = new double[4];
-        Map<String, Object> attributeMap;
 
         //创建地层节点
         for (int i = 0; i < numFeature; ++i) {
@@ -336,27 +344,12 @@ public class KGServiceImpl implements KGService {
                 face.setNodeName(Integer.toString(i));
             }
 
-            attributeMap = new HashMap<>();
-            for (int j = 0; j < fieldCount; j++) {
-                FieldDefn fieldDefn = featureDefn.GetFieldDefn(j);
-                int fieldTypeCode = fieldDefn.GetFieldType();
-                switch (fieldTypeCode) {
-                    case 2:
-                        attributeMap.put(fieldDefn.GetName(), feature.GetFieldAsDouble(j));
-                    case 12:
-                    case 0:
-                        attributeMap.put(fieldDefn.GetName(), feature.GetFieldAsInteger(j));
-                    case 4:
-                    default:
-                        attributeMap.put(fieldDefn.GetName(), feature.GetFieldAsString(j));
-                }
-            }
-            face.setAttribute(attributeMap);
-
 //            Geometry pointsGeometry = feature.GetGeometryRef().GetGeometryRef(0);
 //            for (int j = 0; j < pointsGeometry.GetPointCount(); ++j) {
 //                face.addPoint(new Vertex(pointsGeometry.GetX(j), pointsGeometry.GetY(j), pointsGeometry.GetZ(j)));
 //            }
+
+            readFeatureAttribute(featureDefn, feature, face);
 
             //地层节点存入库中
             saveNode(face);
@@ -378,6 +371,26 @@ public class KGServiceImpl implements KGService {
         }
     }
 
+    private void readFeatureAttribute(FeatureDefn featureDefn, Feature feature, ScenarioNode node) {
+        int fieldCount = featureDefn.GetFieldCount();
+        Map<String, Object> attributeMap = new HashMap<>();
+        for (int j = 0; j < fieldCount; j++) {
+            FieldDefn fieldDefn = featureDefn.GetFieldDefn(j);
+            int fieldTypeCode = fieldDefn.GetFieldType();
+            switch (fieldTypeCode) {
+                case 2:
+                    attributeMap.put(fieldDefn.GetName(), feature.GetFieldAsDouble(j));
+                case 12:
+                case 0:
+                    attributeMap.put(fieldDefn.GetName(), feature.GetFieldAsInteger(j));
+                case 4:
+                default:
+                    attributeMap.put(fieldDefn.GetName(), feature.GetFieldAsString(j));
+            }
+        }
+        node.setAttribute(attributeMap);
+    }
+
     private void saveBoundaries() {
         Layer boundaryLayer = geoMap.getBoundaryLayer();
         Feature feature;
@@ -385,6 +398,7 @@ public class KGServiceImpl implements KGService {
             System.out.println("无边界图层！");
             return;
         }
+        FeatureDefn featureDefn = boundaryLayer.GetLayerDefn();
         long numFeature = boundaryLayer.GetFeatureCount(0);
 
         for (int i = 0; i < numFeature; ++i) {
@@ -406,6 +420,7 @@ public class KGServiceImpl implements KGService {
 //                    fault.setName(feature.GetFieldAsString("name"));
                     fault.setName(feature.GetFieldAsString("code"));
                     fault.setCode(feature.GetFieldAsString("code"));
+
                     //加入新断层
                     saveNode(fault);
                     saveRelation(new BelongRelation(boundary, fault));
@@ -415,6 +430,7 @@ public class KGServiceImpl implements KGService {
                     saveRelation(new SubjectRelation(geoEvent, fault));
                 }
             }
+            readFeatureAttribute(featureDefn, feature, boundary);
 
             //添加新的界线
             saveNode(boundary);
@@ -429,10 +445,10 @@ public class KGServiceImpl implements KGService {
                     face = geoMap.getFaces().get(fid);
                 else
                     face = findFaceById(fid).get(0);
-                if (face != null)//判断界线是否是地层上边界或下边界
-                    saveRelation(new BelongRelation(boundary, face).setBelongType(TopologyUtil.JudgeEdgeAtTopOrBottomOfFace(feature.GetGeometryRef(), true)));
-            }
-            if (-1 != boundaryLayer.FindFieldIndex("RIGHT_FID", 0) && -1 != feature.GetFieldAsInteger("RIGHT_FID")) {
+            if (face != null)//判断界线是否是地层上边界或下边界
+                saveRelation(new BelongRelation(boundary, face).setBelongType(TopologyUtil.JudgeEdgeAtTopOrBottomOfFace(feature.GetGeometryRef(), true)));
+        }
+        if (-1 != boundaryLayer.FindFieldIndex("RIGHT_FID", 0) && -1 != feature.GetFieldAsInteger("RIGHT_FID")) {
                 fid = feature.GetFieldAsInteger("RIGHT_FID");
                 if (geoMap.getFaces().size() > fid)
                     face = geoMap.getFaces().get(fid);

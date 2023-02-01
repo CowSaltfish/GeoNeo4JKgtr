@@ -48,6 +48,8 @@ public interface KGService {
 
     List<MutuallyCuttingRelation> inferMutuallyCuttingRelationOnFaults();
 
+    void create(String facePath, String boundaryPath);
+
     void clearAll();
 
     void inferTimeSeriesOfFaults();
