@@ -63,7 +63,7 @@ public interface BasicRelationDao extends Neo4jRepository<BasicRelation, Long> {
      *  界线a、b属于断层f1
      *  界线c属于断层f2
      *      abc邻接
-     *      与a、b邻接的其他线段不属于f2
+     *      与a、b邻接的其他线段不属于f2（有且只有一个c满足）
      * @return 截断关系集合
      */
     @Query("MATCH (A:Boundary)-[RB:BELONG]->(F1:Fault) \n" +

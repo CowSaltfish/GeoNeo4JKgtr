@@ -64,10 +64,16 @@ public class KGControllerTest {
 //        kgController.create(kgCreateRequest);
 
         //南京矢量地质图
-        KGCreateRequest kgCreateRequest = new KGCreateRequest();
-        kgCreateRequest.setFacePath("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\Nanjing\\Nanjing\\strata1.shp");
-        kgCreateRequest.setBoundaryPath("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\Nanjing\\Nanjing\\boundaries.shp");
-        kgController.create(kgCreateRequest);
+//        KGCreateRequest kgCreateRequest = new KGCreateRequest();
+//        kgCreateRequest.setFacePath("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\Nanjing\\Nanjing\\strata1.shp");
+//        kgCreateRequest.setBoundaryPath("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\Nanjing\\Nanjing\\boundaries.shp");
+//        kgController.create(kgCreateRequest);
+
+        //南京知识图谱融合
+//        KGCreateRequest kgCreateRequest = new KGCreateRequest();
+//        kgCreateRequest.setFacePath("D:\\13222\\Desktop\\DesktopFiles\\ExperimentData\\MyProject\\KGTR\\data\\NanjingSection\\拓塘镇\\相关地层.shp");
+//        kgCreateRequest.setBoundaryPath("D:\\13222\\Desktop\\DesktopFiles\\ExperimentData\\MyProject\\KGTR\\data\\NanjingSection\\拓塘镇\\相关地层边界.shp");
+//        kgController.create(kgCreateRequest);
 
     }
 
