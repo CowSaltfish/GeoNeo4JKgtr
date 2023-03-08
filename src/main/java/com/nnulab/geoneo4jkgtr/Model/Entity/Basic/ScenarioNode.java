@@ -20,7 +20,12 @@ public class ScenarioNode extends BasicNode {
      * 如果使用引用类型，无法作为属性添加到节点上
      */
 //    @Property
-    private Vertex position;
+    private Vertex positionPoint;
+    /**
+     * 位置或中心位置(x,y,z)
+     */
+    @Property
+    private double[] position = new double[2];
     /**
      * 四至
      */
@@ -61,6 +66,8 @@ public class ScenarioNode extends BasicNode {
      */
     private Map<String, Object> Attribute;
 
+    public ScenarioNode() {
+    }
 
 //    @Relationship(type = "SCENARIO_RELATION", direction = Relationship.UNDIRECTED)
 //    private Set<ScenarioRelation> scenarioRelations;

@@ -353,7 +353,7 @@ public interface BasicRelationDao extends Neo4jRepository<BasicRelation, Long> {
      * where nss>1 with s1
      * match (s1)-[r:CONTACTS{type:'Strata'}]-(s2:Face)
      * where s1.center_y>s2.center_y
-     * delete r
+     * delete.txt r
      * with distinct s1,s2
      * create (s1)-[:ADJACENT_SS_AU]->(s2),(s2)-[:ADJACENT_SS_AU]->(s1)
      */

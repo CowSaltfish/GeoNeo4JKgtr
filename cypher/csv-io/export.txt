@@ -1,7 +1,7 @@
 --导出节点--
 MATCH (n:Face)
 with collect(n) as cs
-call apoc.export.csv.data([],cs,"faces.csv",{})
+call apoc.export.csv.data(cs,[],"faces.csv",{})
 YIELD file, source, format, nodes, relationships, properties, time, rows, batchSize, batches, done, data
 RETURN file, source, format, nodes, relationships, properties, time, rows, batchSize, batches, done, data
 

@@ -16,6 +16,8 @@ public class Line extends GeoNode {
 
     private ArrayList<Vertex> vertices;
 
+    private double strike;
+
     public Line() {
         vertices = new ArrayList<>();
         setLabelName("Line");

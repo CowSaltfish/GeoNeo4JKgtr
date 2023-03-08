@@ -191,7 +191,7 @@ public class GdalUtil {
             return null;
         DataSource dataSource = oDriver.Open(path);
         Layer layer = dataSource.GetLayer(0);
-        //dataSource.delete();
+        //dataSource.delete.txt();
         return layer;
     }
 

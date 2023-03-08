@@ -12,10 +12,11 @@ import org.springframework.data.repository.query.Param;
  */
 public interface ScenarioNodeDao extends Neo4jRepository<ScenarioNode, Long> {
 
-    @Query("match (n) where id(n)=$id \n" +
-            "with n\n" +
-            "CALL apoc.create.setProperty(n, $key, $value)\n" +
-            "YIELD node\n" +
+    @Query("match (n) " +
+            "where id(n) = $id " +
+            "with n " +
+            "CALL apoc.create.setProperty(n, $key, $value) " +
+            "YIELD node " +
             "RETURN node")
     void putAttribute(@Param("id") long id, @Param("key") String key, @Param("value") Object value);
 }

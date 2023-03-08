@@ -2,9 +2,8 @@ package com.nnulab.geoneo4jkgtr.Service;
 
 /**
  * @author : LiuXianYu
- * @date : 2023/1/8 22:12
+ * @date : 2023/3/6 11:06
  */
-public interface KnowledgeReasoningService {
-
+public interface SceneModelService {
 
 }

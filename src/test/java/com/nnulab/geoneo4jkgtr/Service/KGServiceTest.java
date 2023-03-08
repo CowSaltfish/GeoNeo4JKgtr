@@ -1,5 +1,7 @@
 package com.nnulab.geoneo4jkgtr.Service;
 
+import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Boundary;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Relations.SpatialRelationship.AdjacentRelation;
 import com.nnulab.geoneo4jkgtr.Model.request.KGCreateRequest;
 import com.nnulab.geoneo4jkgtr.Util.GdalUtil;
 import junit.framework.TestCase;
@@ -47,26 +49,22 @@ public class KGServiceTest extends TestCase {
 //                "E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\Dome\\boundary1.shp");
 
         //褶皱识别
-//        KGCreateRequest kgCreateRequest = new KGCreateRequest();
-//        kgCreateRequest.setFacePath("D:\\13222\\Desktop\\DesktopFiles\\ExperimentData\\MyProject\\KGTR\\data\\qinglongshan\\QingLongShanWithoutQuaternary.shp");
-//        kgCreateRequest.setBoundaryPath("D:\\13222\\Desktop\\DesktopFiles\\ExperimentData\\MyProject\\KGTR\\data\\qinglongshan\\boundaries1015.shp");
-//        kgController.create(kgCreateRequest);
+        kgService.create("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\KGQuery\\Nanjing\\qls_strata.shp",
+                "E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\KGQuery\\Nanjing\\qls_boundaries2.shp",
+                "E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Doc\\地层年代表.csv");
 
         //褶皱识别
-//        KGCreateRequest kgCreateRequest = new KGCreateRequest();
-//        kgCreateRequest.setFacePath("D:\\13222\\Desktop\\DesktopFiles\\ExperimentData\\MyProject\\KGTR\\data\\FoldIdentify\\strata.shp");
-//        kgCreateRequest.setBoundaryPath("D:\\13222\\Desktop\\DesktopFiles\\ExperimentData\\MyProject\\KGTR\\data\\FoldIdentify\\boundaries.shp");
-//        kgController.create(kgCreateRequest);
+//        kgService.create("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\FoldIdentify\\strata.shp",
+//                "E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\FoldIdentify\\boundaries.shp");
 
         //南京矢量地质图
-//        KGCreateRequest kgCreateRequest = new KGCreateRequest();
-//        kgCreateRequest.setFacePath("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\Nanjing\\Nanjing\\strata1.shp");
-//        kgCreateRequest.setBoundaryPath("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\Nanjing\\Nanjing\\boundaries.shp");
-//        kgController.create(kgCreateRequest);
+//        kgService.create("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\KGQuery\\Nanjing\\strata3857.shp",
+//                "E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\KGQuery\\Nanjing\\3857\\qls_boundaries2.shp",
+//                "E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Doc\\地层年代表.csv");
 
         //南京知识图谱融合
-        kgService.create("D:\\13222\\Desktop\\DesktopFiles\\ExperimentData\\MyProject\\KGTR\\data\\NanjingSection\\拓塘镇\\相关地层.shp",
-                "D:\\13222\\Desktop\\DesktopFiles\\ExperimentData\\MyProject\\KGTR\\data\\NanjingSection\\拓塘镇\\相关地层边界.shp");
+//        kgService.create("D:\\13222\\Desktop\\DesktopFiles\\ExperimentData\\MyProject\\KGTR\\data\\NanjingSection\\拓塘镇\\相关地层.shp",
+//                "D:\\13222\\Desktop\\DesktopFiles\\ExperimentData\\MyProject\\KGTR\\data\\NanjingSection\\拓塘镇\\相关地层边界.shp");
     }
 
     @Test
@@ -95,5 +93,14 @@ public class KGServiceTest extends TestCase {
     @Test
     public void clearAll() throws Exception {
         kgService.clearAll();
+    }
+
+    @Test
+    public void testSaveRelation() {
+        Boundary boundaryi = new Boundary();
+        Boundary boundaryj = new Boundary();
+        boundaryi.setId(129276L);
+        boundaryj.setId(129328L);
+        kgService.saveRelation(new AdjacentRelation(boundaryi, boundaryj));
     }
 }

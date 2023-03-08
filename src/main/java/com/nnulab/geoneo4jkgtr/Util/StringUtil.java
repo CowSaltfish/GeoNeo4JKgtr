@@ -1,10 +1,9 @@
 package com.nnulab.geoneo4jkgtr.Util;
 
+import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Face;
 import org.apache.commons.lang3.ObjectUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class StringUtil {
     /*
@@ -75,5 +74,53 @@ public class StringUtil {
             }
         }
         return sb.toString();
+    }
+
+    /**
+     * 动态规划获取最长公共子List
+     *
+     * @param stratumNameList0 List0
+     * @param stratumNameList1 List1
+     * @return 子List
+     */
+    public static List<String> LCSList(List<String> stratumNameList0, List<String> stratumNameList1) {
+        int size0 = stratumNameList0.size(), size1 = stratumNameList1.size();
+        //endIndex是最长公共子串在str1中的结束位置
+        int endIndex = -1, maxSize = 0;
+        //二维数组dp，其内的值默认为0。维度为(len1+1)*(len2+1)
+        //其中dp[0][?]和dp[?][0]为辅助的单元，用于递推式的起始条件，相比于上述递推式有所变化。
+//        List<List<Integer>> dp (size0 + 1, Vector < Integer>(size1 + 1));
+        int[][] dp = new int[size0 + 1][size1 + 1];
+        for (int i = 1; i <= size0; i++) {
+            for (int j = 1; j <= size1; j++) {
+                //相等则更新dp[i][j],否则仍然为0
+                if (stratumNameList0.get(i - 1).equals(stratumNameList0.get(j - 1))) {
+                    dp[i][j] = dp[i - 1][j - 1] + 1;
+                    //更新maxSize和endIndex
+                    if (dp[i][j] > maxSize) {
+                        maxSize = dp[i][j];
+                        endIndex = i - 1;
+                    }
+                }
+            }
+        }
+        int startIndex = endIndex - maxSize + 1;
+        return stratumNameList0.subList(startIndex, maxSize);
+    }
+
+    public static String getWhereFid(List<List<Face>> swings) {
+        String where = "";
+
+        for (int i = 0; i < swings.size(); ++i) {
+            List<Face> swing = swings.get(i);
+            for (int j = 0; j < swing.size(); ++j) {
+                where += "\"FID\"=" + ((Map) swing.get(j)).get("fid");
+                if (!(i == swings.size() - 1 && j == swing.size() - 1)) {
+                    where += " or ";
+                }
+            }
+        }
+
+        return where;
     }
 }

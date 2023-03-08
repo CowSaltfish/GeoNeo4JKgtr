@@ -37,22 +37,22 @@ public class GeoMap {
             setBoundaryLayer(boundaryLayer);
 
         //写入地层年代表
-        chronology.getList().add("P");
-        chronology.getList().add("E");
-        chronology.getList().add("Q");
-        chronology.getList().add("F");
-        chronology.getList().add("R");
-        chronology.getList().add("D");
-        chronology.getList().add("T");
-        chronology.getList().add("U");
-        chronology.getList().add("V");
-        chronology.getList().add("W");
-        chronology.getList().add("O");
-        chronology.getList().add("M");
-        chronology.getList().add("J");
-        chronology.getList().add("K");
-        chronology.getList().add("G");
-        chronology.getList().add("B");
+//        chronology.getList().add("P");
+//        chronology.getList().add("E");
+//        chronology.getList().add("Q");
+//        chronology.getList().add("F");
+//        chronology.getList().add("R");
+//        chronology.getList().add("D");
+//        chronology.getList().add("T");
+//        chronology.getList().add("U");
+//        chronology.getList().add("V");
+//        chronology.getList().add("W");
+//        chronology.getList().add("O");
+//        chronology.getList().add("M");
+//        chronology.getList().add("J");
+//        chronology.getList().add("K");
+//        chronology.getList().add("G");
+//        chronology.getList().add("B");
     }
 
     public void addFace(Face face) {

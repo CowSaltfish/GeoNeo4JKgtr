@@ -50,6 +50,8 @@ public interface KGService {
 
     void create(String facePath, String boundaryPath);
 
+    void create(String facePath, String boundaryPath,String stratigraphicChronologyPath);
+
     void clearAll();
 
     void inferTimeSeriesOfFaults();

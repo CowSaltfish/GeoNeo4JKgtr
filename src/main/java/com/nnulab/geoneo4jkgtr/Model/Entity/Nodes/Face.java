@@ -15,7 +15,7 @@ import java.util.Set;
 /**
  * @author : LiuXianYu
  * @date : 2022/3/29 15:50
- * 面要素
+ * 面要素（其实就是地层）
  */
 @NodeEntity
 @Data
@@ -29,6 +29,8 @@ public class Face extends GeoNode {
 //    private double[] envelope = new double[4];
     //长短轴比例
     private double ratioLongShortAxis;
+    //地质年代序号（越小越老）
+    private int AgeIndex;
 
     @Relationship(type = "ADJACENT", direction = Relationship.UNDIRECTED)
     private Set<AdjacentRelation> adjacent;

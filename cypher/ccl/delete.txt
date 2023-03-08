@@ -1,0 +1,9 @@
+MATCH ()-[r]-()
+WITH r
+LIMIT 1000000
+DELETE r
+
+MATCH ()-[r]-()
+WITH r
+LIMIT 1000000
+DELETE r

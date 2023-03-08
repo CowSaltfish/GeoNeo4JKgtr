@@ -4,9 +4,12 @@ import com.alibaba.fastjson.JSON;
 import com.nnulab.geoneo4jkgtr.Dao.BasicRelationDao;
 import com.nnulab.geoneo4jkgtr.Dao.OntologyDao;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Face;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Vertex;
 import com.nnulab.geoneo4jkgtr.Model.KnowledgeGraph;
 import com.nnulab.geoneo4jkgtr.Service.OntologyService;
+import com.nnulab.geoneo4jkgtr.Util.GeometryUtil;
 import com.nnulab.geoneo4jkgtr.Util.Neo4jUtil;
+import com.nnulab.geoneo4jkgtr.Util.StringUtil;
 import org.neo4j.driver.v1.types.Path;
 import org.springframework.stereotype.Service;
 
@@ -25,9 +28,24 @@ public class OntologyServiceImpl implements OntologyService {
     @Resource
     private Neo4jUtil neo4jUtil;
 
-
     @Resource
     private BasicRelationDao basicRelationDao;
+
+    private static final String NODE_NAME = "nodeName";
+    private static final String POSITION = "position";
+
+    String[] StratigraphicChronology = {"高家边组", "坟头组", "茅山组", "五通组", "石炭系下统", "黄龙组", "船山组", "栖霞组", "孤峰组", "龙潭组", "下青龙组", "上青龙组", "薛家村组", "黄马青组", "范家塘组", "象山群", "浦口组"};
+
+    Map<String, Integer> StratigraphicChronologyMap;
+
+    public OntologyServiceImpl() {
+        StratigraphicChronologyMap = new HashMap<>();
+        int stratumId = 0;
+        for (String stratumName :
+                StratigraphicChronology) {
+            StratigraphicChronologyMap.put(stratumName, stratumId++);
+        }
+    }
 
     @Override
     public void save(String name, String ontologyJson) {
@@ -65,14 +83,15 @@ public class OntologyServiceImpl implements OntologyService {
                 "with b,f1\n" +
                 "match (b)-[:BELONG]->(f2:Face)\n" +
                 "with f1,f2\n" +
-                "where f1.nodeName=f2.nodeName\n" +
-                "match p=(f1:Face)-[:ADJACENT*4]-(f2:Face) \n" +
+                "where f1.nodeName=f2.nodeName and f1.fid<>f2.fid and not exists((f1)-[:ADJACENT]-(f2))\n" +
+                "match p=(f1:Face)-[:ADJACENT*..4]->(f2:Face) \n" +
                 "with nodes(p) as nps,f1,f2,p\n" +
                 "where SIZE(apoc.coll.toSet(nps)) = LENGTH(p) + 1\n" +
                 "unwind nps as np1\n" +
                 "with size(collect(distinct np1.nodeName)) as distinctNpName,f1,f2,nps,p\n" +
                 "where (length(p)+1)/2+1=distinctNpName\n" +
-                "return p skip 0 limit 100";
+//                "return p skip 0 limit 100";
+                "return p";
         //待返回的值，与cql return后的值顺序对应
         List<Map<String, Object>> nodeList = new ArrayList<>();
         List<Map<String, Object>> edgeList = new ArrayList<>();
@@ -84,29 +103,29 @@ public class OntologyServiceImpl implements OntologyService {
         for (int i = 0; i < count; i++) {
             List<Map<String, Object>> nodesList = pathList.get(i);
             //核部最老或最新
-            if(!oldestOrNewestNuclearDepartment(nodesList)){
+            if (!oldestOrNewestNuclearDepartment(nodesList)) {
                 continue;
             }
             //时代连续
-            if(!continuousTimes(nodesList)){
+            if (!continuousTimes(nodesList)) {
                 continue;
             }
-            //邻接地层时代皆不相同
-            if(AdjacentStrataSameAge(nodesList)){
-                continue;
-            }
+//            //邻接地层时代皆不相同
+//            if (AdjacentStrataSameAge(nodesList)) {
+//                continue;
+//            }
             //地层链同线
-            if(!StrataChainCollinear(nodesList)){
+            if (!StrataChainCollinear(nodesList)) {
                 continue;
             }
             //地层链对称
-            if(!StrataChainSymmetry(nodesList)){
+            if (!StrataChainSymmetry(nodesList)) {
                 continue;
             }
-            //排除对称地层邻接的
-            if(symmetricalAdjacentStrata(nodesList)){
-                continue;
-            }
+            //排除对称的两个地层为邻接地层的情况
+//            if (symmetricalAdjacentStrata(nodesList)) {
+//                continue;
+//            }
             //记录对称重复地层链
             ++countOfSymmetricRepetition;
         }
@@ -116,28 +135,94 @@ public class OntologyServiceImpl implements OntologyService {
         return null;
     }
 
+    /**
+     * 排除对称的两个地层为邻接地层的情况
+     *
+     * @param nodesList
+     * @return
+     */
     private boolean symmetricalAdjacentStrata(List<Map<String, Object>> nodesList) {
         return false;
     }
 
+    /**
+     * 地层链对称
+     *
+     * @param nodesList
+     * @return
+     */
     private boolean StrataChainSymmetry(List<Map<String, Object>> nodesList) {
+        List<String> stratumNameList0 = new ArrayList<>(), stratumNameList1;
+        for (Map<String, Object> node : nodesList) {
+            stratumNameList0.add((String) node.get(NODE_NAME));
+        }
+        stratumNameList1 = new ArrayList<>(stratumNameList0);
+        Collections.reverse(stratumNameList1);
+
+        //动态规划获取最长公共子串
+        List<String> lcslist = StringUtil.LCSList(stratumNameList0, stratumNameList1);
+
         return false;
     }
 
+    /**
+     * 地层链同线
+     *
+     * @param nodesList
+     * @return
+     */
     private boolean StrataChainCollinear(List<Map<String, Object>> nodesList) {
-        return false;
+        int i, count = nodesList.size();
+        for (i = 0; i < count - 2; ++i) {
+            Vertex v0 = new Vertex((double) ((List<?>) nodesList.get(i).get(POSITION)).get(0), (double) ((List<?>) nodesList.get(i).get(POSITION)).get(1));
+            Vertex v1 = new Vertex((double) ((List<?>) nodesList.get(i + 1).get(POSITION)).get(0), (double) ((List<?>) nodesList.get(i + 1).get(POSITION)).get(1));
+            Vertex v2 = new Vertex((double) ((List<?>) nodesList.get(i + 2).get(POSITION)).get(0), (double) ((List<?>) nodesList.get(i + 2).get(POSITION)).get(1));
+            double angle = GeometryUtil.calAngle(v0, v1, v2);
+            if (!(angle > 150.0 / 180 * Math.PI && angle < 210.0 / 180 * Math.PI)) {
+                return false;
+            }
+        }
+        return true;
     }
 
+    /**
+     * 邻接地层时代相同
+     *
+     * @param nodesList
+     * @return
+     */
     private boolean AdjacentStrataSameAge(List<Map<String, Object>> nodesList) {
         return false;
     }
 
+    /**
+     * 时代连续
+     *
+     * @param nodesList
+     * @return
+     */
     private boolean continuousTimes(List<Map<String, Object>> nodesList) {
-        return false;
+        int i, count = nodesList.size();
+        for (i = 0; i < count; ++i) {
+            int strataDiff = Math.abs(StratigraphicChronologyMap.get(nodesList.get(i).get(NODE_NAME)) - StratigraphicChronologyMap.get(nodesList.get((i + 1) % count).get(NODE_NAME)));
+            if (strataDiff != 1) {
+                return false;
+            }
+        }
+        return true;
     }
 
+    /**
+     * 核部最老或最新
+     *
+     * @param nodesList
+     * @return
+     */
     private boolean oldestOrNewestNuclearDepartment(List<Map<String, Object>> nodesList) {
-        return false;
+        String name = (String) nodesList.get(nodesList.size() / 2).get(NODE_NAME);
+        if (!Objects.equals(name, StratigraphicChronology[0]) && !Objects.equals(name, StratigraphicChronology[StratigraphicChronology.length - 1]))
+            return false;
+        return true;
     }
 
     @Override

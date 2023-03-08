@@ -7,18 +7,14 @@ import com.nnulab.geoneo4jkgtr.Model.Entity.Basic.BasicRelation;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Basic.ScenarioNode;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Basic.ScenarioRelation;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Enum.StratumType;
-import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Boundary;
-import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Face;
-import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Fault;
-import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.GeoEvent;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.*;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Relations.*;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Relations.SpatialRelationship.AdjacentRelation;
 import com.nnulab.geoneo4jkgtr.Model.GeoMap;
 import com.nnulab.geoneo4jkgtr.Model.KnowledgeGraph;
 import com.nnulab.geoneo4jkgtr.Service.KGService;
 import com.nnulab.geoneo4jkgtr.Service.OntologyService;
-import com.nnulab.geoneo4jkgtr.Util.Neo4jUtil;
-import com.nnulab.geoneo4jkgtr.Util.TopologyUtil;
+import com.nnulab.geoneo4jkgtr.Util.*;
 import org.gdal.ogr.*;
 import org.neo4j.driver.v1.Record;
 import org.neo4j.driver.v1.StatementResult;
@@ -30,6 +26,8 @@ import javax.annotation.Resource;
 import java.util.*;
 
 /**
+ * 知识图谱基本功能
+ *
  * @author : LiuXianYu
  * @date : 2022/4/1 15:25
  */
@@ -63,7 +61,12 @@ public class KGServiceImpl implements KGService {
     @Resource
     private Neo4jUtil neo4jUtil;
 
+//    @Resource
+//    private FileUtil fileUtil;
+
     private GeoMap geoMap;
+
+    private Map<String, Integer> stratigraphicChronology;
 
 
     @Override
@@ -79,9 +82,13 @@ public class KGServiceImpl implements KGService {
         Map<String, Object> attributes = node.getAttribute();
         if (attributes == null) {
             System.out.println();
+            return;
         }
         for (Map.Entry<String, Object> entry : attributes.entrySet()) {
-            scenarioNodeDao.putAttribute(node.getId(), entry.getKey(), entry.getValue());
+            if (StringUtil.isBlank(entry.getKey())) {
+                continue;
+            }
+            scenarioNodeDao.putAttribute(node.getId(), "A_" + entry.getKey(), entry.getValue());
         }
     }
 
@@ -159,10 +166,19 @@ public class KGServiceImpl implements KGService {
 
     @Override
     public void create(String facePath, String boundaryPath) {
+        geoMap = new GeoMap(facePath, boundaryPath);
         //节点生成
         createNodes(facePath, boundaryPath);
         //构建要素时空关系(邻接、方向、距离)、角度
         CreateRelationshipBetweenFaces();
+    }
+
+    @Override
+    public void create(String facePath, String boundaryPath, String stratigraphicChronologyPath) {
+        if (!StringUtil.isBlank(stratigraphicChronologyPath)) {
+            stratigraphicChronology = FileUtil.getStratigraphicChronologyFromCSV(stratigraphicChronologyPath);
+        }
+        create(facePath, boundaryPath);
     }
 
     @Override
@@ -226,7 +242,6 @@ public class KGServiceImpl implements KGService {
 
     @Override
     public void createNodes(String facePath, String boundaryPath) {
-        geoMap = new GeoMap(facePath, boundaryPath);
         saveFaces();//读取面要素并存入数据库
         saveBoundaries();//读取地层界线及断层数据并存入数据库
     }
@@ -326,6 +341,7 @@ public class KGServiceImpl implements KGService {
             face.setArea(feature.GetGeometryRef().Area());
             feature.GetGeometryRef().GetEnvelope(env);
             face.setEnvelope(env);
+            face.setPosition(new double[]{(env[0] + (env[0] - env[1]) / 2), (env[2] + (env[2] - env[3]) / 2)});
 
             if (-1 != faceLayer.FindFieldIndex("Type", 0)) {
                 String featureType = feature.GetFieldAsString("Type");
@@ -349,7 +365,13 @@ public class KGServiceImpl implements KGService {
 //                face.addPoint(new Vertex(pointsGeometry.GetX(j), pointsGeometry.GetY(j), pointsGeometry.GetZ(j)));
 //            }
 
+            //获取要素属性
             readFeatureAttribute(featureDefn, feature, face);
+            if (-1 != faceLayer.FindFieldIndex("地层类", 0)) {
+                String stratumType = feature.GetFieldAsString("地层类");
+                //岩浆岩类型并不在年代表中，因此记为负数
+                face.setAgeIndex(stratigraphicChronology.getOrDefault(stratumType, -1));
+            }
 
             //地层节点存入库中
             saveNode(face);
@@ -371,6 +393,22 @@ public class KGServiceImpl implements KGService {
         }
     }
 
+    /**
+     * 设置地层年代序号
+     *
+     * @param face
+     */
+    private void SetAgeIndex(Face face) {
+
+    }
+
+    /**
+     * 获取要素属性表
+     *
+     * @param featureDefn
+     * @param feature
+     * @param node
+     */
     private void readFeatureAttribute(FeatureDefn featureDefn, Feature feature, ScenarioNode node) {
         int fieldCount = featureDefn.GetFieldCount();
         Map<String, Object> attributeMap = new HashMap<>();
@@ -406,6 +444,10 @@ public class KGServiceImpl implements KGService {
 
             Boundary boundary = new Boundary();
             boundary.setFid(i);
+
+            //抽取界线几何信息
+            double[][] vertices = feature.GetGeometryRef().GetPoints();
+            boundary.setStrike(GeometryUtil.calLineStrike(vertices, false));
 
             //断层
             if ((-1 != boundaryLayer.FindFieldIndex("type", 0) && "fault".equals(feature.GetFieldAsString("type")))
@@ -445,10 +487,10 @@ public class KGServiceImpl implements KGService {
                     face = geoMap.getFaces().get(fid);
                 else
                     face = findFaceById(fid).get(0);
-            if (face != null)//判断界线是否是地层上边界或下边界
-                saveRelation(new BelongRelation(boundary, face).setBelongType(TopologyUtil.JudgeEdgeAtTopOrBottomOfFace(feature.GetGeometryRef(), true)));
-        }
-        if (-1 != boundaryLayer.FindFieldIndex("RIGHT_FID", 0) && -1 != feature.GetFieldAsInteger("RIGHT_FID")) {
+                if (face != null)//判断界线是否是地层上边界或下边界
+                    saveRelation(new BelongRelation(boundary, face).setBelongType(TopologyUtil.JudgeEdgeAtTopOrBottomOfFace(feature.GetGeometryRef(), true)));
+            }
+            if (-1 != boundaryLayer.FindFieldIndex("RIGHT_FID", 0) && -1 != feature.GetFieldAsInteger("RIGHT_FID")) {
                 fid = feature.GetFieldAsInteger("RIGHT_FID");
                 if (geoMap.getFaces().size() > fid)
                     face = geoMap.getFaces().get(fid);
