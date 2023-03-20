@@ -16,10 +16,6 @@ import com.nnulab.geoneo4jkgtr.Service.KGService;
 import com.nnulab.geoneo4jkgtr.Service.OntologyService;
 import com.nnulab.geoneo4jkgtr.Util.*;
 import org.gdal.ogr.*;
-import org.neo4j.driver.v1.Record;
-import org.neo4j.driver.v1.StatementResult;
-import org.neo4j.driver.v1.types.Path;
-import org.neo4j.driver.v1.types.Relationship;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -273,7 +269,7 @@ public class KGServiceImpl implements KGService {
 
     @Override
     public KnowledgeGraph search(String cypher) {
-        return neo4jUtil.result2Path(neo4jUtil.RunCypher(cypher));
+        return neo4jUtil.result2KG(neo4jUtil.RunCypher(cypher));
     }
 
     @Override
@@ -285,7 +281,7 @@ public class KGServiceImpl implements KGService {
         //本体转为cypher
         String cypher = neo4jUtil.ontologyJson2Cypher(JSON.toJSONString(ontology));
         //查询返回子图
-        return neo4jUtil.result2Path(neo4jUtil.RunCypher(cypher));
+        return neo4jUtil.result2KG(neo4jUtil.RunCypher(cypher));
     }
 
     private void lightenKnowledgeGraph(KnowledgeGraph knowledgeGraph) {
@@ -367,8 +363,8 @@ public class KGServiceImpl implements KGService {
 
             //获取要素属性
             readFeatureAttribute(featureDefn, feature, face);
-            if (-1 != faceLayer.FindFieldIndex("地层类", 0)) {
-                String stratumType = feature.GetFieldAsString("地层类");
+            if (-1 != faceLayer.FindFieldIndex("name", 0)) {
+                String stratumType = feature.GetFieldAsString("name");
                 //岩浆岩类型并不在年代表中，因此记为负数
                 face.setAgeIndex(stratigraphicChronology.getOrDefault(stratumType, -1));
             }
@@ -529,6 +525,8 @@ public class KGServiceImpl implements KGService {
                         || (Math.abs(boundaryGeoI.GetX(boundaryGeoI.GetPointCount() - 1) - boundaryGeoJ.GetX(0)) <= 0.001
                         && Math.abs(boundaryGeoI.GetY(boundaryGeoI.GetPointCount() - 1) - boundaryGeoJ.GetY(0)) <= 0.001)) {
 //                if (boundaryGeoI.Buffer(0.001).Intersect(boundaryLayer.GetFeature(j).GetGeometryRef().Buffer(0.001))) {
+
+                    //建立边界邻接关系
                     if (geoMap.getBoundaries().size() > i)
                         boundaryi = geoMap.getBoundaries().get(i);
 //                    else if (!(boundariesi = findBoundaryByFid(i)).isEmpty())
@@ -542,6 +540,8 @@ public class KGServiceImpl implements KGService {
 //                        System.out.print("添加边界邻接关系:");
                         saveRelation(new AdjacentRelation(boundaryi, boundaryj));
                         saveRelation(new AdjacentRelation(boundaryj, boundaryi));
+                        //计算夹角
+//                        basicNodeDao.setBoundariesAngle();
                     }
                 }
             }

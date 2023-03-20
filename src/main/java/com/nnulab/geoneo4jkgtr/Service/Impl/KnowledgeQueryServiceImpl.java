@@ -1,11 +1,11 @@
 package com.nnulab.geoneo4jkgtr.Service.Impl;
 
 import com.nnulab.geoneo4jkgtr.Dao.FoldDao;
+import com.nnulab.geoneo4jkgtr.Dao.KnowledgeQueryDao;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Face;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Vertex;
 import com.nnulab.geoneo4jkgtr.Service.KnowledgeQueryService;
-import com.nnulab.geoneo4jkgtr.Util.GeometryUtil;
-import com.nnulab.geoneo4jkgtr.Util.StringUtil;
+import com.nnulab.geoneo4jkgtr.Util.*;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -23,15 +23,43 @@ public class KnowledgeQueryServiceImpl implements KnowledgeQueryService {
     @Resource
     FoldDao foldDao;
 
+    @Resource
+    DaoUtil daoUtil;
+
+    @Resource
+    KnowledgeQueryDao knowledgeQueryDao;
+
+    /**
+     * 褶皱构造查找
+     * 模拟用户基于本系统进行褶皱构造查找
+     */
     @Override
     public void foldQuery() {
         String where;//用于获取结果节点的fid的where子句，方便展示
 
         //核部模式匹配
         List<Face> cores = foldDao.matchCorePattern();
+        where = StringUtil.getWhereFid(cores);
 
         //翼部模式匹配
-        List<List<Face>> swingPaths = foldDao.matchSwingPattern();
+        List<List<Face>> swingPaths = new ArrayList<>();
+        for (int i = 0; i < cores.size(); ++i) {
+            Face core = cores.get(i);
+            int fid = core.getFid(), length = 5;
+
+//            if (fid != 5024) {
+//                continue;
+//            }
+
+            System.out.println("翼步路径查找：" + i + "/" + cores.size() + "，当前核部fid为：" + core.getFid());
+            if (fid == 5024) {//青龙山路径长度设为15，其他为5，但由于路径长度传参怎么都不成功，这里先这么写
+                length = 15;
+                swingPaths.addAll(foldDao.matchSwingPattern15(fid, length));
+                continue;
+            }
+            swingPaths.addAll(foldDao.matchSwingPattern(fid, length));
+//            swingPaths.addAll(daoUtil.matchSwingPattern(fid, length));//非springboot方法
+        }
         where = StringUtil.getWhereFid(swingPaths);
 
         //基于Louvain社区发现算法的两翼地层划分
@@ -44,6 +72,7 @@ public class KnowledgeQueryServiceImpl implements KnowledgeQueryService {
         //对称重复模式匹配
         foldDao.matchSymmetricalRepeatPattern();
     }
+
 
     /**
      * 硬编码划分褶皱构造两翼

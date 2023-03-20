@@ -1,6 +1,12 @@
 --导入节点--
-LOAD CSV WITH HEADERS FROM "file:///faces.csv" AS line CREATE (:BasicNode:Face:ScenarioNode {_id:line._id,
+LOAD CSV WITH HEADERS FROM "file:///faces.csv" AS line
+CREATE (:BasicNode:ScenarioNode:Face {_id:line._id,
 _labels:line._labels,added: toInteger(line.added),area: toFloat(line.area),center_y:
 toInteger(line. center_y),envelope: line.envelope,fid:line.fid,geometryForm:line.geometryForm,
 labelName: line.labelName,length: toInteger(line.length),nodeName:line.nodeName,
 ratioLongShortAxis: line.ratioLongShortAxis})
+
+--导入关系(尚未测试)--
+LOAD CSV WITH HEADERS FROM "file:///subjects.csv" AS line
+match (from:{_id:line._start}),(to:{_id:line._end})
+merge (from)-[r:SUBJECT{property:line.property,added:line.added,direction:line.direction,directionOfTime:line.directionOfTime,distance:line.distance,distanceOfTime:line.distanceOfTime,relationName:line.relationName}]->(to)

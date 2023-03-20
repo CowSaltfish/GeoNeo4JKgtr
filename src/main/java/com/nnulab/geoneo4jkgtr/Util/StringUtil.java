@@ -108,19 +108,34 @@ public class StringUtil {
         return stratumNameList0.subList(startIndex, maxSize);
     }
 
-    public static String getWhereFid(List<List<Face>> swings) {
-        String where = "";
+    public static String getWhereFid(List<?> faces) {
+        Set<Integer> fidSet = new HashSet<>();
 
-        for (int i = 0; i < swings.size(); ++i) {
-            List<Face> swing = swings.get(i);
-            for (int j = 0; j < swing.size(); ++j) {
-                where += "\"FID\"=" + ((Map) swing.get(j)).get("fid");
-                if (!(i == swings.size() - 1 && j == swing.size() - 1)) {
-                    where += " or ";
+        for (int i = 0; i < faces.size(); ++i) {
+            Object o = faces.get(i);
+            if (o instanceof Face) {
+                fidSet.add(((Face) faces.get(i)).getFid());
+            } else if (o instanceof List<?>) {
+                for (int j = 0; j < ((List<?>) o).size(); ++j) {
+                    fidSet.add(((Face) ((List<?>) o).get(i)).getFid());
                 }
             }
         }
+        return getWhereFidFromFidSet(fidSet);
+    }
 
-        return where;
+    private static String getWhereFidFromFidSet(Set<Integer> fidSet) {
+        StringBuilder where = new StringBuilder();
+
+        int size = fidSet.size(), count = 0;
+        for (Integer fid : fidSet) {
+            where.append("\"FID\"=");
+            where.append(fid);
+            ++count;
+            if (count < size) {
+                where.append(" or ");
+            }
+        }
+        return where.toString();
     }
 }

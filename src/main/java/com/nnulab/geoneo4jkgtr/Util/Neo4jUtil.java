@@ -1,10 +1,11 @@
 package com.nnulab.geoneo4jkgtr.Util;
 
-import com.nnulab.geoneo4jkgtr.Model.Entity.Basic.BasicRelation;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Basic.ScenarioRelation;
 import com.nnulab.geoneo4jkgtr.Model.KnowledgeGraph;
 import org.neo4j.driver.internal.InternalNode;
 import org.neo4j.driver.internal.InternalRelationship;
+import org.neo4j.driver.internal.value.ListValue;
+import org.neo4j.driver.internal.value.NodeValue;
 import org.neo4j.driver.v1.*;
 import org.neo4j.driver.v1.types.Node;
 import org.neo4j.driver.v1.types.Path;
@@ -79,35 +80,66 @@ public class Neo4jUtil {
     }
 
     /**
-     * 解析结果路径
+     * 解析结果返回知识图谱
      *
      * @param result
      * @return
      */
-    public KnowledgeGraph result2Path(StatementResult result) {
+    public KnowledgeGraph result2KG(StatementResult result) {
         KnowledgeGraph knowledgeGraph = new KnowledgeGraph();
         List<ScenarioRelation> relationships = new ArrayList<>();
         List<Object> nodes = new ArrayList<>();
         while (result.hasNext()) {
             Record record = result.next();
-            for (org.neo4j.driver.v1.Value i : record.values()) {
-                Path path = i.get("graph").get(0).asPath();
-                //处理路径中的关系
-                for (Relationship relationship : path.relationships()) {
-                    relationships.add(Neo4jRelationship2ScenarioRelation(relationship));
-                }
-                //处理路径中的节点
-                for (Node node : path.nodes()) {
-                    Map<String, Object> nodeMap = node.asMap();
+            for (org.neo4j.driver.v1.Value value : record.values()) {
+                if(value instanceof NodeValue){
+                    Map<String, Object> nodeMap = value.asMap();
                     Map<String, Object> nodeHashMap = new HashMap<>(nodeMap);
-                    nodeHashMap.put("id", node.id());
+                    nodeHashMap.put("id", value.asNode().id());
                     nodes.add(nodeHashMap);
+                }
+                else if(value instanceof ListValue){
+                    Path path = value.get("graph").get(0).asPath();
+                    //处理路径中的关系
+                    for (Relationship relationship : path.relationships()) {
+                        relationships.add(Neo4jRelationship2ScenarioRelation(relationship));
+                    }
+                    //处理路径中的节点
+                    for (Node node : path.nodes()) {
+                        Map<String, Object> nodeMap = node.asMap();
+                        Map<String, Object> nodeHashMap = new HashMap<>(nodeMap);
+                        nodeHashMap.put("id", node.id());
+                        nodes.add(nodeHashMap);
+                    }
                 }
             }
         }
         knowledgeGraph.setRelationships(relationships);
         knowledgeGraph.setNodes(nodes);
         return knowledgeGraph;
+    }
+
+    /**
+     * 解析结果返回路径节点
+     *
+     * @param result
+     * @return
+     */
+    public List<Object> result2Nodes(StatementResult result) {
+        List<Object> nodes = new ArrayList<>();
+        while (result.hasNext()) {
+            Record record = result.next();
+            for (org.neo4j.driver.v1.Value i : record.values()) {
+                if(i instanceof ListValue){
+                    List<Object> innerO = new ArrayList<>(((ListValue) i).asList());
+                    nodes.add(innerO);
+                }
+                else{
+                    nodes.add(i);
+                }
+            }
+        }
+        return nodes;
     }
 
     /**
@@ -185,4 +217,6 @@ public class Neo4jUtil {
         }
         return nodesOfPathList;
     }
+
+
 }

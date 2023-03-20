@@ -7,12 +7,7 @@ import org.gdal.ogr.ogr;
 import org.gdal.osr.SpatialReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.gdal.gdal.Band;
-import org.gdal.gdal.ColorTable;
-import org.gdal.gdal.Dataset;
-import org.gdal.gdal.gdal;
 import org.gdal.ogr.*;
-import org.gdal.osr.SpatialReference;
 
 import java.io.*;
 import java.util.List;
@@ -31,6 +26,13 @@ public class GdalUtil {
     public static void init() {
         loadGdalDll();
         gdal.AllRegister();
+
+        // 支持中文路径
+//        CPLSetConfigOption("GDAL_FILENAME_IS_UTF8", "NO");
+        gdal.SetConfigOption("GDAL_FILENAME_IS_UTF8", "NO");
+        // 属性表字段支持中文
+//        CPLSetConfigOption("SHAPE_ENCODING", "");
+        gdal.SetConfigOption("SHAPE_ENCODING", "CP936");
     }
 
     public static void loadGdalDll() {
@@ -190,9 +192,8 @@ public class GdalUtil {
         if (null == path)
             return null;
         DataSource dataSource = oDriver.Open(path);
-        Layer layer = dataSource.GetLayer(0);
         //dataSource.delete.txt();
-        return layer;
+        return dataSource.GetLayer(0);
     }
 
 
@@ -526,10 +527,7 @@ public class GdalUtil {
      * @param targetPath
      */
     public static void Shp2GeoJson(String sourcePath, String targetPath) {
-//        // 支持中文路径
-//        CPLSetConfigOption("GDAL_FILENAME_IS_UTF8", "NO");
-//        // 属性表字段支持中文
-//        CPLSetConfigOption("SHAPE_ENCODING", "");
+
         // 打开文件，读取数据
         org.gdal.ogr.Driver oDriver = ogr.GetDriverByName("ESRI Shapefile");
         if (null == oDriver)
@@ -554,4 +552,75 @@ public class GdalUtil {
         if (poDstDS != null)
             poDstDS.delete();
     }
+
+    /**
+     * 根据Fid，筛选原面图层要素，并保存
+     *
+     * @param sourcePath
+     * @param desPath
+     * @param ids
+     */
+    public static void createNewShpByLayerWithId(String sourcePath, String desPath, List<Integer> ids) {
+        Layer sourceLayer = getLayerByPath(sourcePath);
+        if (sourceLayer == null) {
+            return;
+        }
+
+        //创建数据，创建ESRI的shp文件
+        org.gdal.ogr.Driver oDriver = ogr.GetDriverByName("ESRI Shapefile");
+        if (oDriver == null) {
+            return;
+        }
+        // 步骤1、创建数据源
+        DataSource desDS = oDriver.CreateDataSource(desPath, null);
+        if (desDS == null) {
+            return;
+        }
+        //步骤2、创建空间坐标系
+        SpatialReference desSRS = new SpatialReference();
+        //步骤3、创建图层，并添加坐标系，创建一个多边形图层(wkbGeometryType.wkbUnknown,存放任意几何特征)
+//        layer = ds.CreateLayer(layer_name, srs=srs, geom_type=ogr.wkbPoint,options=["ENCODING=GBK"]) # 生成中文编码shp
+        Vector<String> vector = new Vector<>();
+//        vector.add("ENCODING=utf-8");
+        Layer desLayer = desDS.CreateLayer("layer", desSRS, sourceLayer.GetGeomType(), vector);
+        if (desLayer == null) {
+            return;
+        }
+
+        FeatureDefn featureDefn = sourceLayer.GetLayerDefn();
+
+        for (int i = 0; i < featureDefn.GetFieldCount(); i++) {
+            FieldDefn oField = new FieldDefn(featureDefn.GetFieldDefn(i).GetName());
+            desLayer.CreateField(oField, 1);
+        }
+
+
+        //步骤6、定义一个特征要素oFeature
+//        FeatureDefn oDefn = desLayer.GetLayerDefn();
+        for (int i = 0; i < sourceLayer.GetFeatureCount(); ++i) {
+            if (!ids.contains(i)) {
+                continue;
+            }
+            Feature desFeature = sourceLayer.GetFeature(i);
+            Feature sourceFeature = sourceLayer.GetFeature(i);
+            for (int j = 0; j < featureDefn.GetFieldCount(); j++) {
+                int fieldTypeCode = sourceFeature.GetFieldType(j);
+                switch (fieldTypeCode) {
+                    case 2:
+                        desFeature.SetField(j, sourceFeature.GetFieldAsDouble(j));
+                    case 12:
+                    case 0:
+                        desFeature.SetField(j, sourceFeature.GetFieldAsInteger(j));
+                    case 4:
+                    default:
+                        desFeature.SetField(j, sourceFeature.GetFieldAsString(j));
+                }
+                desFeature.SetField(j, sourceFeature.GetFieldAsString(j));
+            }
+            desLayer.CreateFeature(desFeature);
+        }
+        oDriver.delete();
+        desDS.delete();
+    }
+
 }

@@ -1,5 +1,6 @@
 package com.nnulab.geoneo4jkgtr.Service;
 
+import com.nnulab.geoneo4jkgtr.Util.GdalUtil;
 import junit.framework.TestCase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,4 +25,5 @@ public class KnowledgeQueryServiceTest extends TestCase {
     public void testFoldQuery() {
         knowledgeQueryService.foldQuery();
     }
+
 }

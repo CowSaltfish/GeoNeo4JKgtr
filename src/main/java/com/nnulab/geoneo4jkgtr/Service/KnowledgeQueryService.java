@@ -7,4 +7,5 @@ package com.nnulab.geoneo4jkgtr.Service;
 public interface KnowledgeQueryService {
 
     void foldQuery();
+
 }

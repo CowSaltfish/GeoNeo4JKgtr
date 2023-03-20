@@ -1,0 +1,24 @@
+--近直界线匹配--
+match (b:Boundary)-[:BELONG]->(f:Face)
+with b,collect(f) as cf
+where size(cf)>1 and all(f1 in cf where f1.ageIndex>4)
+with collect(b) as cb
+match (b1:Boundary)
+match (b2:Boundary)
+// match (:Boundary)-[r:ADJACENT]-(:Boundary)
+where b1 in cb and b2 in cb
+match p=(b1)-[:ADJACENT*..15]->(b2)
+with relationships(p) as rp,nodes(p) as np,cb
+where all(r in rp where r.includedAngle>175 or r.includedAngle<5)
+and all(n in np where n in cb)
+return [n in np|n.fid]
+limit 5
+
+match (b:Boundary)-[:BELONG]->(f:Face)
+with b,collect(f) as cf
+where size(cf)>1 and all(f1 in cf where f1.ageIndex>4)
+with collect(b) as cb
+match (b1:Boundary)-[r:ADJACENT]-(b2:Boundary)
+where b1 in cb and b2 in cb
+and r.includedAngle>175 or r.includedAngle<5
+return b1

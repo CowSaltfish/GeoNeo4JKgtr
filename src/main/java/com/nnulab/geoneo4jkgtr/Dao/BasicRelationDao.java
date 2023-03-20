@@ -198,9 +198,10 @@ public interface BasicRelationDao extends Neo4jRepository<BasicRelation, Long> {
      *  若两个地层面同名，
      *  则两地层同质/时代
      */
-    @Query("MATCH (n1:Face),(n2:Face) " +
-            "where n1.fid <> n2.fid and n1.nodeName = n2.nodeName " +
-            "with distinct n1, n2 " +
+    @Query("MATCH (n1:Face)\n" +
+            "match (n2:Face) \n" +
+            "where n1.fid <> n2.fid and n1.nodeName = n2.nodeName \n" +
+            "with distinct n1, n2 \n" +
             "create (n1)-[:ATSAMETIME]->(n2)")
     void inferSameTimeOnStrata();
 
