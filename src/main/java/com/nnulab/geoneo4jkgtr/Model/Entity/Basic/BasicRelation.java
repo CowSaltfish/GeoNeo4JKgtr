@@ -1,6 +1,7 @@
 package com.nnulab.geoneo4jkgtr.Model.Entity.Basic;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.cache.Weigher;
 import com.nnulab.geoneo4jkgtr.Model.ESFilter;
 import com.nnulab.geoneo4jkgtr.Model.PropertiesFilter;
 import lombok.Data;
@@ -16,8 +17,9 @@ import java.util.Date;
 @Data
 @RelationshipEntity(type = "DEFAULT")
 public class BasicRelation implements BasicRelationInterface {
-    @GraphId
+    @Id
     @JsonIgnore
+    @GeneratedValue
     private Long id;
     @Property(name = "start")
     private Long startNode;
@@ -46,6 +48,9 @@ public class BasicRelation implements BasicRelationInterface {
 
     @Property
     private Long added = new Date().getTime();
+
+    @Property
+    private int weight;
 
     public BasicRelation() {
 

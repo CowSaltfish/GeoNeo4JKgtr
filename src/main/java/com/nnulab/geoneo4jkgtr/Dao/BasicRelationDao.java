@@ -5,9 +5,11 @@ import com.nnulab.geoneo4jkgtr.Model.Entity.Basic.ScenarioRelation;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Relations.CuttingOffRelation;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Relations.CuttingThroughRelation;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Relations.MutuallyCuttingRelation;
-import org.neo4j.driver.v1.types.Path;
 import org.springframework.data.neo4j.annotation.Query;
 import org.springframework.data.neo4j.repository.Neo4jRepository;
+import org.springframework.data.repository.query.Param;
+//import org.neo4j.driver.v1.types.Path;
+//import org.neo4j.driver.types.Path;
 
 import java.util.List;
 
@@ -54,8 +56,8 @@ public interface BasicRelationDao extends Neo4jRepository<BasicRelation, Long> {
             "WITH F1,F2,A,B,C,D,E\n" +
             "WHERE F1.name<>F2.name AND A.fid<>B.fid AND B.fid<>C.fid AND C.fid<>D.fid AND D.fid<>E.fid AND A.fid<>E.fid AND B.fid<>E.fid AND B.fid<>D.fid AND A.fid<>C.fid AND A.fid<>D.fid AND E.fid<>C.fid\n" +
             "with distinct F1,F2\n" +
-            "CREATE (F1)-[RC:CUTTINGTHROUGH]->(F2)")
-    List<CuttingThroughRelation> inferCuttingThroughRelationOnFaults();
+            "CREATE (F1)-[RC:CUTTINGTHROUGH{relationName:'切割',relationName_en:'cutting through'}]->(F2)")
+    List<CuttingThroughRelation> createCuttingThroughRelationOnFaults();
 
     /**
      * 基于界线属于断层关系、界线间邻接关系，推断断层切割关系
@@ -89,8 +91,8 @@ public interface BasicRelationDao extends Neo4jRepository<BasicRelation, Long> {
             "with F1,F2,A,B,C\n" +
             "where not exists ((F1)-[:CUTTINGTHROUGH]->(F2))\n" +
             "WITH distinct F1,F2\n" +
-            "CREATE (F1)-[RC:CUTTINGOFF]->(F2)")
-    List<CuttingOffRelation> inferCuttingOffRelationOnFaults();
+            "CREATE (F1)-[RC:CUTTINGOFF{relationName:'截断',relationName_en:'cutting off'}]->(F2)")
+    List<CuttingOffRelation> createCuttingOffRelationOnFaults();
 
     /**
      * 基于界线属于断层关系、界线间邻接关系，推断断层切割关系
@@ -120,8 +122,8 @@ public interface BasicRelationDao extends Neo4jRepository<BasicRelation, Long> {
             "WITH F1,F2,A,B,C,D\n" +
             "MATCH (D)-[RB:BELONG]->(F2)\n" +
             "WITH distinct F1,F2\n" +
-            "CREATE (F1)-[RC:MUTUALLYCUTTING]->(F2)")
-    List<MutuallyCuttingRelation> inferMutuallyCuttingRelationOnFaults();
+            "CREATE (F1)-[RC:MUTUALLYCUTTING{relationName:'相交',relationName_en:'mutually cutting'}]->(F2)")
+    List<MutuallyCuttingRelation> createMutuallyCuttingRelationOnFaults();
 
     /**
      * 基于断层间地质关系，推断断层时间序列
@@ -132,9 +134,12 @@ public interface BasicRelationDao extends Neo4jRepository<BasicRelation, Long> {
      *      另f1f2相交
      *  则发育时间相同
      */
-    @Query("match (f1:Fault)--(f2:Fault) " +
-            "where exists ((f2)-[:CUTTINGTHROUGH]->(f1)) or exists ((f1)-[:CUTTINGOFF]->(f2)) " +
-            "create (f1)-[:EARLIERTHAN]->(f2)")
+    @Query("match (f1:Fault)-[:CUTTINGTHROUGH|CUTTINGOFF]-(f2:Fault)\n" +
+            "where exists ((f2)-[:CUTTINGTHROUGH]->(f1)) or exists ((f1)-[:CUTTINGOFF]->(f2))\n" +
+            "match (g1:GeoEvent)-[:SUBJECT]->(f1)\n" +
+            "match (g2:GeoEvent)-[:SUBJECT]->(f2)\n" +
+            "with distinct g1,g2\n" +
+            "create (g1)-[:EARLIERTHAN{relationName:'早于',relationName_en:'earlier than',nodesType:'EARLIERTHAN_FF'}]->(g2)")
     void inferTimeSeriesOfFaults();
 
     /**
@@ -147,7 +152,7 @@ public interface BasicRelationDao extends Neo4jRepository<BasicRelation, Long> {
             "where s1.fid <> s2.fid \n" +
             "with distinct s1,s2 \n" +
             "create (s1)-[:CONTAINS]->(s2)")
-    void CreateContainsRelationBetweenFacesFromBoundaries();
+    void CreateContainsRelationBetweenFaces();
 
     /**
      * 基于弧段，构建地层间邻接关系
@@ -159,8 +164,30 @@ public interface BasicRelationDao extends Neo4jRepository<BasicRelation, Long> {
             "match (b)-[r2:BELONG]->(s2:Face) \n" +
             "where s1.fid <> s2.fid and r2.belongType <> 'outer' and  r2.belongType <> 'inner' \n" +
             "with distinct s1,s2 " +
-            "create (s1)-[:ADJACENT]->(s2)")
-    void CreateAdjacentRelationBetweenFacesFromBoundaries();
+            "create (s1)-[:ADJACENT{relationName:'邻接',relationName_en:'adjacent'}]->(s2)")
+    void CreateAdjacentRelationBetweenFaces();
+
+    /**
+     * 若两个地质界线相邻，且分别属于两个断层，则两个断层相邻
+     */
+    @Query("match (b1:Boundary)-[:ADJACENT]-(b2:Boundary)\n" +
+            "match (b1)-[:BELONG]->(f1:Fault)\n" +
+            "match (b2)-[:BELONG]->(f2:Fault)\n" +
+            "where f1.code<>f2.code\n" +
+            "with distinct f1,f2 \n" +
+            "create (f1)-[:ADJACENT{relationName:'邻接',relationName_en:'adjacent'}]->(f2)")
+    void CreateAdjacentRelationBetweenFaults();
+
+    /**
+     * 若一个地质界线同时属于一个断层一个地层，则该断层与地层相邻
+     */
+    @Query("match (b:Boundary)-[:BELONG]->(f:Fault)\n" +
+            "match (b)-[:BELONG]->(s:Stratum)\n" +
+            "with distinct f,s \n" +
+            "create (f)-[:ADJACENT{relationName:'邻接',relationName_en:'adjacent'}]->(s),\n" +
+            "(f)<-[:ADJACENT{relationName:'邻接',relationName_en:'adjacent'}]-(s)")
+    void CreateAdjacentRelationBetweenFaultsAndFaces();
+
 
     /**
      * 推断地层面间拓扑关系
@@ -168,10 +195,10 @@ public interface BasicRelationDao extends Neo4jRepository<BasicRelation, Long> {
      *  则两地层邻接
      */
     @Query("match (b:Boundary)-[:BELONG]->(s1:Face) " +
-//            "where not exists((b)-[:BELONG]->(:Fault))" +
+            "where not exists((b)-[:BELONG]->(:Fault))" +
             "with b,s1 " +
             "match (b)-[:BELONG]->(s2:Face) " +
-            "where s1.fid <> s2.fid and s1.type = 'Sedimentary' and s2.type = 'Sedimentary'" +
+            "where s1.fid <> s2.fid and s1.stratumType = 'Sedimentary' and s2.stratumType = 'Sedimentary'" +
             "with distinct s1,s2 " +
             "create (s1)-[:CONTACTS{type:'Strata'}]->(s2)")
     void inferContactRelationshipOfSSOnStrata();
@@ -179,7 +206,7 @@ public interface BasicRelationDao extends Neo4jRepository<BasicRelation, Long> {
     @Query("match (b:Boundary)-[:BELONG]->(s1:Face) " +
             "with b,s1 " +
             "match (b)-[:BELONG]->(s2:Face) " +
-            "where s1.fid <> s2.fid and (s1.type = 'Magmatic' or s2.type = 'Magmatic')" +
+            "where s1.fid <> s2.fid and (s1.stratumType = 'Magmatic' or s2.stratumType = 'Magmatic')" +
             "with distinct s1,s2 " +
             "create (s1)-[:CONTACTS{type:'Intrusion'}]->(s2)")
     void inferContactRelationshipOfIntrusionOnStrata();
@@ -188,7 +215,8 @@ public interface BasicRelationDao extends Neo4jRepository<BasicRelation, Long> {
             "where exists((b)-[:BELONG]->(:Fault))" +
             "with b,s1 " +
             "match (b)-[:BELONG]->(s2:Face) " +
-            "where s1.fid <> s2.fid and s1.type = 'Sedimentary' and s2.type = 'Sedimentary'" +
+            "where s1.fid <> s2.fid " +
+            "and s1.stratumType = 'Sedimentary' and s2.stratumType = 'Sedimentary'" +
             "with distinct s1,s2 " +
             "create (s1)-[:CONTACTS{type:'Fault'}]->(s2)")
     void inferContactRelationshipOfFaultOnStrata();
@@ -202,8 +230,8 @@ public interface BasicRelationDao extends Neo4jRepository<BasicRelation, Long> {
             "match (n2:Face) \n" +
             "where n1.fid <> n2.fid and n1.nodeName = n2.nodeName \n" +
             "with distinct n1, n2 \n" +
-            "create (n1)-[:ATSAMETIME]->(n2)")
-    void inferSameTimeOnStrata();
+            "create (n1)-[:SAMETYPE]->(n2)")
+    void inferSameTypeOnStrata();
 
     /**
      * 推断断层切割地层关系
@@ -221,6 +249,7 @@ public interface BasicRelationDao extends Neo4jRepository<BasicRelation, Long> {
      * （没法很好地处理倒转的地层）
      */
     @Query("match (s1:Face)-[:CONTACTS{type:'Strata'}]->(s2:Face)\n" +
+            "where s1.nodeName <> s2.nodeName\n" +
             "with s1,s2\n" +
             "match (b:Boundary)-[:BELONG{belongType:'bottom'}]->(s1)\n" +
             "with s1,s2,b\n" +
@@ -230,7 +259,7 @@ public interface BasicRelationDao extends Neo4jRepository<BasicRelation, Long> {
             "with s1,s2,e1\n" +
             "match (e2:GeoEvent)-->(s2)\n" +
             "with distinct e1 ,e2\n" +
-            "create (e1)-[:LATER_THAN]->(e2)")
+            "create (e1)<-[:EARLIERTHAN{relationName:'早于',relationName_en:'earlier than'}]-(e2)")
     void inferTimeSeriesOfStrata();
 
     /**
@@ -241,14 +270,13 @@ public interface BasicRelationDao extends Neo4jRepository<BasicRelation, Long> {
      * e2到e3存在路径
      * 删除e2指向e1的关系
      */
-    @Query("match (e2:GeoEvent)-[r]->(e1:GeoEvent) " +
-            "with e1,e2,r\n" +
-            "match (e3:GeoEvent)-->(e1) " +
+    @Query("match (e2:GeoEvent)-[r:EARLIERTHAN]->(e1:GeoEvent)\n" +
+            "match (e3:GeoEvent)-[:EARLIERTHAN]->(e1)\n" +
             "where e2.fid<>e3.fid \n" +
             "with e1,e2,e3,r \n" +
-            "match (e2)-[*]->(e3) " +
+            "match p=(e2)-[:EARLIERTHAN*]->(e3)\n" +
             "delete r")
-    void deleteExcpetTimeAdjacentRelationship();
+    void deleteExceptTimeAdjacentRelationship();
 
     /**
      * 基于侵入岩与地层接触关系，推断侵入岩发育时间
@@ -277,18 +305,18 @@ public interface BasicRelationDao extends Neo4jRepository<BasicRelation, Long> {
             "with ei,es1,es23,si,count(ss1) as count_ss1,ss2,ss3\n" +
             "where count_ss1 = 1\n" +
             "with distinct ei,es1,es23\n" +
-            "create (es1)-[:LATER_THAN]->(ei), (ei)-[:LATER_THAN]->(es23)")
+            "create (es1)<-[:EARLIERTHAN{relationName:'早于',relationName_en:'earlier than'}]-(ei), (ei)<-[:EARLIERTHAN{relationName:'早于'}]-(es23)")
     void inferTimeOfIntrusionByStrata_0();
 
     /**
      * 前一步中如果有侵入岩未找到上边界，则推断它晚于所有地层生成事件
      */
     @Query("match (ei:GeoEvent{eventType:\"INTRUSION\"})\n" +
-            "where not exists  ((:GeoEvent)-[:LATER_THAN]-(ei))\n" +
+            "where not exists  ((:GeoEvent)-[:EARLIERTHAN]-(ei))\n" +
             "with distinct ei\n" +
             "match (es:GeoEvent{eventType: \"GENERATION\"})\n" +
-            "where not exists  ((:GeoEvent)-[:LATER_THAN]->(es))\n" +
-            "create (ei)-[:LATER_THAN]->(es)")
+            "where not exists  ((:GeoEvent)<-[:EARLIERTHAN]-(es))\n" +
+            "create (ei)<-[:EARLIERTHAN{relationName:'早于',relationName_en:'earlier than'}]-(es)")
     void inferTimeOfIntrusionByStrata_1();
 
     /**
@@ -301,17 +329,17 @@ public interface BasicRelationDao extends Neo4jRepository<BasicRelation, Long> {
             "with ef,s\n" +
             "match (es:GeoEvent)-[:SUBJECT]-(s)\n" +
             "with distinct ef,es\n" +
-            "create (ef)-[:LATER_THAN]->(es)")
+            "create (ef)<-[:EARLIERTHAN{relationName:'早于',relationName_en:'earlier than'}]-(es)")
     void inferTimeOfFaultsByStrata_0();
 
     @Query("match (ef:GeoEvent)-[:SUBJECT]->(f:Fault)\n" +
             "with ef\n" +
-            "match (ef)-[:LATER_THAN]->(es1:GeoEvent)\n" +
+            "match (ef)<-[:EARLIERTHAN]-(es1:GeoEvent)\n" +
             "with ef,es1\n" +
-            "match (ef)-[r:LATER_THAN]->(es2:GeoEvent)\n" +
+            "match (ef)<-[r:EARLIERTHAN]-(es2:GeoEvent)\n" +
             "where es1.fid<>es2.fid\n" +
             "with es1,es2,r\n" +
-            "match (es1)-[*]->(es2)\n" +
+            "match (es1)-[EARLIERTHAN*]->(es2)\n" +
             "delete r")
     void inferTimeOfFaultsByStrata_1();
 
@@ -343,7 +371,94 @@ public interface BasicRelationDao extends Neo4jRepository<BasicRelation, Long> {
             "with size(collect(distinct np1.nodeName)) as distinctNpName,f1,f2,nps,p\n" +
             "where (length(p)+1)/2+1=distinctNpName\n" +
             "return p skip 0 limit 100")
-    List<Path> GetStrataList();
+    List<Object> GetStrataList();
+
+    @Query("match (b1:Boundary)-[:ADJACENT]-(b2:Boundary)\n" +
+            "match (b2)-[:BELONG]->(s:Face)\n" +
+            "match (b1)-[:BELONG]->(f:Fault)\n" +
+            "where not exists ((f)-[:CUTTING]->(s)) and b1.end_line='Y'\n" +
+            "with distinct s,f\n" +
+            "create (s)-[:GLAND{relationName:'压盖',relationName_en:'gland'}]->(f)")
+    void createGlandRelationBetweenFaultsAndStrata();
+
+    @Query("match (b:Boundary)-[:BELONG]->(s:Face)\n" +
+            "match (b:Boundary)-[:BELONG]->(f:Fault)\n" +
+            "with distinct f,s\n" +
+            "create (f)-[:CUTTING{relationName:'切割',relationName_en:'cutting'}]->(s)")
+    void createCuttingRelationBetweenFaultsAndStrata();
+
+    @Query("match (b1:Boundary)-[:BELONG]->(f:Fault)\n" +
+            "match (b2:Boundary)-[:ADJACENT]->(b1)\n" +
+            "match (b2)-[:BELONG]->(f)\n" +
+            "with b1, collect(b2) as cb2\n" +
+            "where size(cb2)=1\n" +
+            "set b1.end_line='Y'")
+    void setBoundaryOnFaultEnd();
+
+    @Query("MATCH (f:Fault)-[r:CUTTING]->(s:Face)\n" +
+            "match (g1:GeoEvent)-[:SUBJECT]->(f)\n" +
+            "match (g2:GeoEvent)-[:SUBJECT]->(s)\n" +
+            "with distinct g2,g1\n" +
+            "create (g2)-[:EARLIERTHAN{relationName:'早于',relationName_en:'earlier than',nodesType:'EARLIERTHAN_FS'}]->(g1)")
+    void inferTimeSeriesFromFaultsCuttingStrata();
+
+    @Query("MATCH (f:Fault)<-[r:GLAND]-(s:Face)\n" +
+            "match (g1:GeoEvent)-[:SUBJECT]->(f)\n" +
+            "match (g2:GeoEvent)-[:SUBJECT]->(s)\n" +
+            "with distinct g2,g1\n" +
+            "create (g1)-[:EARLIERTHAN{relationName:'早于',relationName_en:'earlier than',nodesType:'EARLIERTHAN_FS'}]->(g2)")
+    void inferTimeSeriesFromStrataGlandFaults();
+
+    @Query("match (e:GeoEvent)\n" +
+            "with distinct e.eventType as e_type, collect(distinct e) as event\n" +
+            "call apoc.create.addLabels(event,[apoc.text.upperCamelCase(e_type)]) yield node\n" +
+            "return *")
+    void classifyEventsByType();
+
+    @Query("MATCH(g1:GeoEvent)-[r:EARLIERTHAN]->(g2:GeoEvent)\n" +
+            "CALL apoc.create.relationship(g1,r.nodesType,{relationName:'早于', relationName_en:'earlier than'},g2)\n" +
+            "YIELD rel\n" +
+            "RETURN rel;")
+    void classifyTemperaRelationByType();
+
+    @Query("match (e2:GeoEvent{eventType:'GENERATION'})-[r:EARLIERTHAN_FS]->(e1:GeoEvent{eventType:'FRACTURE'})\n" +
+            "match (e3:GeoEvent{eventType:'GENERATION'})-[:EARLIERTHAN_FS]->(e1)\n" +
+            "where e2.fid<>e3.fid \n" +
+            "with e1,e2,e3,r \n" +
+            "match p=(e2)-[:EARLIERTHAN_SS*]->(e3)\n" +
+            "delete r")
+    void DefineUpperBound();
+
+    @Query("match (e2:GeoEvent{eventType:'GENERATION'})<-[r:EARLIERTHAN_FS]-(e1:GeoEvent{eventType:'FRACTURE'})\n" +
+            "match (e3:GeoEvent{eventType:'GENERATION'})<-[:EARLIERTHAN_FS]-(e1)\n" +
+            "where e2.fid<>e3.fid \n" +
+            "with e1,e2,e3,r \n" +
+            "match p=(e2)<-[:EARLIERTHAN_SS*]-(e3)\n" +
+            "delete r")
+    void DefineLowerBound();
+
+    /**
+     * 若压盖断层的地层被该断层切割，则为假性压盖，应当删除
+     */
+    @Query("match p=(s1:Stratum)-[r:GLAND]->(f:Fault)\n" +
+            "match (f)-[:CUTTING]->(s2:Stratum)\n" +
+            "where s1.nodeName=s2.nodeName\n" +
+            "delete r")
+    void deleteFakeGlandRelationship();
+
+    @Query("match (n1)-[r]-(n2)\n" +
+            "where id(n1)= $id0 and id(n2) = $id1\n" +
+            "return r")
+    void deleteByNodeIds(@Param("id0") Long id0, @Param("id1") Long id1);
+
+    @Query("MATCH p=()-[r:$relationship]->() RETURN r")
+    List<ScenarioRelation> findByLabel(@Param("relationship")String relationship);
+
+    @Query("MATCH p=()-[r:$relationship]->() RETURN r")
+    void setWeightOnEarlierThanRelationship();
+
+    @Query("match (n) set n.id=id(n)")
+    void setAllNodesId();
 
     /**
      * 将一对多地层接触的两个不同年代地层的接触关系由普通地层接触改为角度不整合接触

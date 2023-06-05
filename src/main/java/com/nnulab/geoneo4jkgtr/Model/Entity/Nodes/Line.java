@@ -10,7 +10,7 @@ import java.util.ArrayList;
  * @author : LiuXianYu
  * @date : 2022/4/3 16:45
  */
-@NodeEntity
+//@NodeEntity
 @Data
 public class Line extends GeoNode {
 

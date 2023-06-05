@@ -16,6 +16,9 @@ public class CuttingOffRelation  extends ScenarioRelation implements BasicRelati
     @Property
     private String relationName = "截断";
 
+    @Property
+    private String relationName_en = "Cutting Off";
+
     public CuttingOffRelation() {
 
     }

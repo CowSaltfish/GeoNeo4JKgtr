@@ -35,9 +35,9 @@ public class GeoEvent extends GeoNode {
         fid = count++;
     }
 
-    public GeoEvent(Face face) {
-        subjectName = face.getNodeName();
-        if (face.getStratumType() == StratumType.Magmatic)
+    public GeoEvent(Stratum stratum) {
+        subjectName = stratum.getNodeName();
+        if (stratum.getStratumType() == StratumType.Magmatic)
             eventType = EventType.INTRUSION;
         else
             eventType = EventType.GENERATION;

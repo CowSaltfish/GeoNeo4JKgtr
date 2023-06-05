@@ -2,7 +2,7 @@ package com.nnulab.geoneo4jkgtr.Dao;
 
 import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Face;
 import com.nnulab.geoneo4jkgtr.Model.KnowledgeGraph;
-import org.springframework.data.neo4j.annotation.Query;
+import org.springframework.data.neo4j.repository.query.Query;
 
 import java.util.List;
 

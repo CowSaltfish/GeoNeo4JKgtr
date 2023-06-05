@@ -2,9 +2,11 @@ package com.nnulab.geoneo4jkgtr.Model.Entity.Basic;
 
 import com.nnulab.geoneo4jkgtr.Model.Entity.Enum.Topology;
 import lombok.Data;
-import org.neo4j.driver.v1.types.Relationship;
+//import org.neo4j.driver.v1.types.Relationship;
+import org.neo4j.ogm.annotation.Properties;
 import org.neo4j.ogm.annotation.Property;
 import org.neo4j.ogm.annotation.RelationshipEntity;
+//import org.springframework.data.neo4j.core.schema.Property;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -59,6 +61,7 @@ public class ScenarioRelation extends BasicRelation {
     /**
      * 属性
      */
+    @Properties
     private Map<String, Object> properties = new HashMap<>();
 
     public ScenarioRelation() {

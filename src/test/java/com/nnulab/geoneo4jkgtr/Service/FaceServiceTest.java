@@ -1,6 +1,7 @@
 package com.nnulab.geoneo4jkgtr.Service;
 
 import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Face;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Stratum;
 import com.nnulab.geoneo4jkgtr.Util.GdalUtil;
 import com.nnulab.geoneo4jkgtr.Util.StringUtil;
 import junit.framework.TestCase;
@@ -27,11 +28,11 @@ public class FaceServiceTest extends TestCase {
     @Test
     public void testFindSedimentaryRockArea() {
         GdalUtil.init();
-        List<Face> sedimentaryRockArea = faceService.findSedimentaryRockArea();
+        List<Stratum> sedimentaryRockArea = faceService.findSedimentaryRockArea();
         List<Integer> Ids = new ArrayList<>();
 //        Ids.add(1);
-        for (Face face : sedimentaryRockArea) {
-            Ids.add(face.getFid());
+        for (Stratum stratum : sedimentaryRockArea) {
+            Ids.add(stratum.getFid());
         }
 //        String where = StringUtil.getWhereFid(sedimentaryRockArea);
 

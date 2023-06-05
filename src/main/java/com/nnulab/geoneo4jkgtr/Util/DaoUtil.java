@@ -1,7 +1,8 @@
 package com.nnulab.geoneo4jkgtr.Util;
 
 import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Face;
-import org.neo4j.driver.v1.StatementResult;
+//import org.neo4j.driver.v1.StatementResult;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Stratum;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -21,21 +22,21 @@ public class DaoUtil {
     @Resource
     private Neo4jUtil neo4jUtil;
 
-    public List<List<Face>> matchSwingPattern(int fid, int length) {
-        String cypher = "match (x:Face)-[r:ADJACENT]->(y:Face) " +
+    public List<List<Stratum>> matchSwingPattern(int fid, int length) {
+        String cypher = "match (x:Stratum)-[r:ADJACENT]->(y:Stratum) " +
                 "where x.ageIndex >= y.ageIndex " +
                 "match (x)<-[:BELONG]-(b: Boundary)-[:BELONG]->(y) " +
                 "where (abs(b.strike-toFloat(x.A_地层走))<45 or abs(b.strike-toFloat(x.A_地层走)+180)<45) " +
                 "and (abs(b.strike-toFloat(y.A_地层走))<45 or abs(b.strike-toFloat(y.A_地层走)+180)<45) " +
                 "with collect(r) as cr " +
-                "match (:Face{fid: 5024 })-[:ADJACENT]->(s1:Face) " +
-                "match p=(s1)-[:ADJACENT*.." + length + " ]->(:Face) " +
+                "match (:Stratum{fid: 5024 })-[:ADJACENT]->(s1:Stratum) " +
+                "match p=(s1)-[:ADJACENT*.." + length + " ]->(:Stratum) " +
                 "with nodes(p) as ns, relationships(p) as rs,p " +
                 "where SIZE(apoc.coll.toSet(ns)) = LENGTH(p) + 1 " +
                 "and all(n in ns where n.ageIndex > 4) " +
                 "and all(r1 in rs where r1 in cr) " +
                 "return [n in ns|n] limit 5";
-//        List<List<Face>> swing = neo4jUtil.result2Nodes(neo4jUtil.RunCypher(cypher));
+//        List<List<Stratum>> swing = neo4jUtil.result2Nodes(neo4jUtil.RunCypher(cypher));
 
         return null;
     }

@@ -16,6 +16,9 @@ public class AdjacentRelation extends ScenarioRelation implements BasicRelationI
     @Property
     private String relationName = "相邻";
 
+    @Property
+    private String relationName_en = "Adjacent";
+
     public AdjacentRelation() {
 
     }

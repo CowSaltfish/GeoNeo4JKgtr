@@ -16,6 +16,9 @@ public class DistanceRelation extends ScenarioRelation implements BasicRelationI
     @Property
     private String relationName = "距离";
 
+    @Property
+    private String relationName_en = "Distance";
+
     public DistanceRelation() {
 
     }

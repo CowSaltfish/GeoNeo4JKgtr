@@ -33,6 +33,7 @@ public class GeometryUtil {
 
     /**
      * 计算向量夹角
+     *
      * @param v0 向量0
      * @param v1 向量1
      * @return 夹角
@@ -53,7 +54,7 @@ public class GeometryUtil {
     /**
      * 计算曲线走向
      *
-     * @param vertices
+     * @param vertices 点集
      * @param directed 曲线是否有向
      * @return
      */
@@ -63,12 +64,15 @@ public class GeometryUtil {
         if (k_b[0] >= 0) {
             strike = (Math.PI / 2 - Math.atan(k_b[0])) / Math.PI * 180;
         } else {
-            strike = (Math.atan(k_b[0]) + Math.PI) / Math.PI * 180;
+            strike = (Math.atan(1.0 / k_b[0]) + Math.PI) / Math.PI * 180;
         }
         if (directed) {
             if (vertices[0][0] > vertices[vertices.length - 1][0]) {
                 strike += 180;
             }
+        }
+        if (Double.isNaN(strike) || Double.isInfinite(strike) || Double.isFinite(strike)) {
+            strike = 0;
         }
         return strike;
     }

@@ -15,19 +15,22 @@ public class ShpController {
     @Resource
     private ShpService shpService;
 
+    @CrossOrigin
     @GetMapping("/toGeoJson")
-    public JSONObject ToGeoJson(@RequestBody ToGeoJsonRequest toGeoJsonRequest) {
-        if (toGeoJsonRequest == null) {
-            return null;
-        }
-//        String sourcePath = toGeoJsonRequest.getSourcePath();
-//        String targetPath = toGeoJsonRequest.getTargetPath();
-        String sourcePath = "E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\StudyData\\StudyData\\stratas.shp";
-        String targetPath =  "E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\StudyData\\StudyData\\geojson\\strata.json";
+    public JSONObject ToGeoJson(@RequestParam("fullShpPath") String fullShpPath, @RequestParam("fullGeoPath") String fullGeoPath) {
+        System.out.println(fullShpPath);
+        System.out.println(fullGeoPath);
+
+        String[] shpArr = fullShpPath.split("/");
+        String sourcePath = String.join("\\", shpArr);
+        String[] geoArr = fullGeoPath.split("/");
+        String targetPath = String.join("\\", geoArr);
+
         if (StringUtils.isAnyBlank(sourcePath, targetPath)) {
             return null;
         }
-        JSONObject geoJson = shpService.ToGeoJson(sourcePath, targetPath);
-        return geoJson;
+        return shpService.ToGeoJson(sourcePath, targetPath);
+
     }
+
 }

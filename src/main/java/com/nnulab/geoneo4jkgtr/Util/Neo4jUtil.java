@@ -2,14 +2,15 @@ package com.nnulab.geoneo4jkgtr.Util;
 
 import com.nnulab.geoneo4jkgtr.Model.Entity.Basic.ScenarioRelation;
 import com.nnulab.geoneo4jkgtr.Model.KnowledgeGraph;
+import org.neo4j.driver.*;
 import org.neo4j.driver.internal.InternalNode;
 import org.neo4j.driver.internal.InternalRelationship;
 import org.neo4j.driver.internal.value.ListValue;
 import org.neo4j.driver.internal.value.NodeValue;
-import org.neo4j.driver.v1.*;
-import org.neo4j.driver.v1.types.Node;
-import org.neo4j.driver.v1.types.Path;
-import org.neo4j.driver.v1.types.Relationship;
+import org.neo4j.driver.internal.value.PathValue;
+import org.neo4j.driver.types.Node;
+import org.neo4j.driver.types.Path;
+import org.neo4j.driver.types.Relationship;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -42,15 +43,18 @@ public class Neo4jUtil {
      *
      * @param cypher
      */
-    public StatementResult RunCypher(String cypher) {
+    public Result RunCypher(String cypher) {
         GetDriver();
-        try (Session session = driver.session()) {
-            return session.run(cypher);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        } finally {
-            close();
-        }
+        Session session = driver.session();
+        return session.run(cypher);
+//        try (Session session = driver.session()) {
+//            return session.run(cypher);
+//        } catch (Exception e) {
+//            throw new RuntimeException(e);
+//        }
+//        finally {
+//            close();
+//        }
     }
 
     /**
@@ -65,7 +69,7 @@ public class Neo4jUtil {
 //        }
         GetDriver();
         try (Session session = driver.session()) {
-            StatementResult result = session.run("WITH \'{\"graph\":\n" + ontologyJson + "}\' AS graphData " +
+            Result result = session.run("WITH \'{\"graph\":\n" + ontologyJson + "}\' AS graphData " +
                     "RETURN olab.schema.auto.cypher(graphData, 0, " + 10000 + ", false) AS cypher");
             if (!result.hasNext()) {
                 return null;
@@ -80,26 +84,30 @@ public class Neo4jUtil {
     }
 
     /**
-     * 解析结果返回知识图谱
+     * 由解析结果返回知识图谱
      *
      * @param result
      * @return
      */
-    public KnowledgeGraph result2KG(StatementResult result) {
+    public KnowledgeGraph result2KG(Result result) {
         KnowledgeGraph knowledgeGraph = new KnowledgeGraph();
         List<ScenarioRelation> relationships = new ArrayList<>();
         List<Object> nodes = new ArrayList<>();
         while (result.hasNext()) {
             Record record = result.next();
-            for (org.neo4j.driver.v1.Value value : record.values()) {
-                if(value instanceof NodeValue){
+            for (org.neo4j.driver.Value value : record.values()) {
+                if (value instanceof NodeValue) {
                     Map<String, Object> nodeMap = value.asMap();
                     Map<String, Object> nodeHashMap = new HashMap<>(nodeMap);
                     nodeHashMap.put("id", value.asNode().id());
                     nodes.add(nodeHashMap);
-                }
-                else if(value instanceof ListValue){
-                    Path path = value.get("graph").get(0).asPath();
+                } else if (value instanceof ListValue || value instanceof PathValue) {
+                    Path path;
+                    if (value instanceof ListValue) {
+                        path = value.get("graph").get(0).asPath();
+                    } else {
+                        path = value.asPath();
+                    }
                     //处理路径中的关系
                     for (Relationship relationship : path.relationships()) {
                         relationships.add(Neo4jRelationship2ScenarioRelation(relationship));
@@ -125,16 +133,15 @@ public class Neo4jUtil {
      * @param result
      * @return
      */
-    public List<Object> result2Nodes(StatementResult result) {
+    public List<Object> result2Nodes(Result result) {
         List<Object> nodes = new ArrayList<>();
         while (result.hasNext()) {
             Record record = result.next();
-            for (org.neo4j.driver.v1.Value i : record.values()) {
-                if(i instanceof ListValue){
+            for (org.neo4j.driver.Value i : record.values()) {
+                if (i instanceof ListValue) {
                     List<Object> innerO = new ArrayList<>(((ListValue) i).asList());
                     nodes.add(innerO);
-                }
-                else{
+                } else {
                     nodes.add(i);
                 }
             }
@@ -175,7 +182,7 @@ public class Neo4jUtil {
         List<List<Map<String, Object>>> nodesOfPathList = new ArrayList<>();
         try {
             Session session = driver.session();
-            StatementResult result = session.run(cql);
+            Result result = session.run(cql);
             List<Record> list = result.list();
             for (Record r : list) {
                 for (String index : r.keys()) {

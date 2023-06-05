@@ -80,7 +80,7 @@ public class KGControllerTest {
     //纯断层实验
 
     /**
-     * 推断断层减切割关系
+     * 推断断层间切割关系
      *
      * @throws Exception
      */

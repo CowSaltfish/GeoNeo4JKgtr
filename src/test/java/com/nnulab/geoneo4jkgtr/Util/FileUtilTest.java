@@ -1,5 +1,6 @@
 package com.nnulab.geoneo4jkgtr.Util;
 
+import com.nnulab.geoneo4jkgtr.Model.StratigraphicChronology;
 import junit.framework.TestCase;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,7 +20,7 @@ public class FileUtilTest extends TestCase {
 
     @Test
     public void testGetStratigraphicChronologyFromCSV() {
-        Map<String, Integer> stratigraphicChronologyFromCSV = FileUtil.getStratigraphicChronologyFromCSV("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Doc\\地层年代表.csv");
+        StratigraphicChronology stratigraphicChronologyFromCSV = FileUtil.getStratigraphicChronologyFromCSV("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Doc\\地层年代表.csv");
     }
 
 }

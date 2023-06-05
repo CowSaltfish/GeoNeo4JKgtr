@@ -10,8 +10,10 @@ import com.nnulab.geoneo4jkgtr.Model.Entity.Enum.StratumType;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.*;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Relations.*;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Relations.SpatialRelationship.AdjacentRelation;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Relations.Temporal.EarlierThanRelation;
 import com.nnulab.geoneo4jkgtr.Model.GeoMap;
 import com.nnulab.geoneo4jkgtr.Model.KnowledgeGraph;
+import com.nnulab.geoneo4jkgtr.Model.StratigraphicChronology;
 import com.nnulab.geoneo4jkgtr.Service.KGService;
 import com.nnulab.geoneo4jkgtr.Service.OntologyService;
 import com.nnulab.geoneo4jkgtr.Util.*;
@@ -43,7 +45,7 @@ public class KGServiceImpl implements KGService {
     private FaultDao faultDao;
 
     @Resource
-    private FaceDao faceDao;
+    private StratumDao stratumDao;
 
     @Resource
     private BoundaryDao boundaryDao;
@@ -62,8 +64,7 @@ public class KGServiceImpl implements KGService {
 
     private GeoMap geoMap;
 
-    private Map<String, Integer> stratigraphicChronology;
-
+    private StratigraphicChronology stratigraphicChronology;
 
     @Override
     public <T extends BasicNode> T saveNode(T node) {
@@ -105,13 +106,13 @@ public class KGServiceImpl implements KGService {
     }
 
     @Override
-    public List<Face> findFaceById(int id) {
-        return faceDao.findByFid(id);
+    public List<Stratum> findFaceById(int id) {
+        return stratumDao.findByFid(id);
     }
 
     @Override
     public long getFaceCount() {
-        return faceDao.count();
+        return stratumDao.count();
     }
 
     @Override
@@ -125,16 +126,15 @@ public class KGServiceImpl implements KGService {
     }
 
     @Override
-    public Boundary findBoundaryById(long id) {
-        return boundaryDao.findOne(id);
+    public Optional<Boundary> findBoundaryById(long id) {
+        return boundaryDao.findById(id);
     }
 
     @Override
     public Map<Integer, Boundary> findAllBoundaryMap() {
         Map<Integer, Boundary> boundaryMap = new HashMap<>();
-        long boundaryCount = boundaryDao.count();
 
-        for (Boundary boundary : boundaryDao.findAll(0)) {
+        for (Boundary boundary : boundaryDao.findAll()) {
             boundaryMap.put(boundary.getFid(), boundary);
         }
         return boundaryMap;
@@ -146,27 +146,31 @@ public class KGServiceImpl implements KGService {
     }
 
     @Override
-    public List<CuttingThroughRelation> inferCuttingThroughRelationOnFaults() {
-        return relationDao.inferCuttingThroughRelationOnFaults();
+    public List<CuttingThroughRelation> createCuttingThroughRelationOnFaults() {
+        return relationDao.createCuttingThroughRelationOnFaults();
     }
 
     @Override
-    public List<CuttingOffRelation> inferCuttingOffRelationOnFaults() {
-        return relationDao.inferCuttingOffRelationOnFaults();
+    public List<CuttingOffRelation> createCuttingOffRelationOnFaults() {
+        return relationDao.createCuttingOffRelationOnFaults();
     }
 
     @Override
-    public List<MutuallyCuttingRelation> inferMutuallyCuttingRelationOnFaults() {
-        return relationDao.inferMutuallyCuttingRelationOnFaults();
+    public List<MutuallyCuttingRelation> createMutuallyCuttingRelationOnFaults() {
+        return relationDao.createMutuallyCuttingRelationOnFaults();
     }
 
     @Override
-    public void create(String facePath, String boundaryPath) {
-        geoMap = new GeoMap(facePath, boundaryPath);
+    public void create(String stratumPath, String boundaryPath) {
+        String stratigraphicChronologyPath = "E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Project\\GeoNeo4jKgtr\\src\\main\\resources\\static\\StratigraphicTimeTable.csv";
+        stratigraphicChronology = FileUtil.getStratigraphicChronologyFromCSV(stratigraphicChronologyPath);
+        geoMap = new GeoMap(stratumPath, boundaryPath);
         //节点生成
-        createNodes(facePath, boundaryPath);
-        //构建要素时空关系(邻接、方向、距离)、角度
-        CreateRelationshipBetweenFaces();
+        createNodes();
+        //构建要素空间关系、几何关系(邻接、方向、距离)、角度
+        CreateSpatialGeometryRelationship();
+//        //根据地层年代表获取沉积事件时间关系
+//        CreateTemporalRelationshipBetweenDepositionEvents();
     }
 
     @Override
@@ -178,11 +182,6 @@ public class KGServiceImpl implements KGService {
     }
 
     @Override
-    public void inferTimeSeriesOfFaults() {
-        relationDao.inferTimeSeriesOfFaults();
-    }
-
-    @Override
     public void inferContactRelationshipOnStrata() {
         relationDao.inferContactRelationshipOfSSOnStrata();//判断地层之间关系（角度不整合接触、平行不整合接触、整合接触）
         relationDao.inferContactRelationshipOfIntrusionOnStrata();//判断侵入岩之间关系（切割）、侵入岩与围岩（侵入接触、沉积接触、包裹关系、穿切关系）
@@ -190,8 +189,8 @@ public class KGServiceImpl implements KGService {
     }
 
     @Override
-    public void inferSameTimeOnStrata() {
-        relationDao.inferSameTimeOnStrata();
+    public void inferSameTypeOnStrata() {
+        relationDao.inferSameTypeOnStrata();
     }
 
     @Override
@@ -202,7 +201,8 @@ public class KGServiceImpl implements KGService {
     @Override
     public void inferTimeSeriesOfStrata() {
         relationDao.inferTimeSeriesOfStrata();
-        relationDao.deleteExcpetTimeAdjacentRelationship();
+//        relationDao.addFoldEvent();
+        relationDao.deleteExceptTimeAdjacentRelationship();
     }
 
     @Override
@@ -222,34 +222,35 @@ public class KGServiceImpl implements KGService {
         relationDao.inferTimeOfFaultsByStrata_1();
     }
 
-    @Override
-    public void CreateRelationshipBetweenFaces() {
+    private void CreateSpatialGeometryRelationship() {
         //生成边界间拓扑关系
         if (0 != getBoundaryCount()) {
             //添加边界邻接关系
-            System.out.println("添加边界邻接关系");
+            System.out.println("添加地质界线邻接关系");
             createTopoOfBoundaries(geoMap.getBoundaryLayer());
         }
-        //获取地质要素间时间关系，并存入数据库
-        saveTimeRelationship();
         //获取地质要素间空间关系，并存入数据库
-        saveSpatialRelationship();
+        System.out.println("建立面与面邻接关系");
+        relationDao.CreateAdjacentRelationBetweenFaces();
+        System.out.println("建立面与面包含关系");
+        relationDao.CreateContainsRelationBetweenFaces();
+        System.out.println("建立断层间邻接关系");
+        relationDao.CreateAdjacentRelationBetweenFaults();
+        System.out.println("建立断层与面之间邻接关系");
+        relationDao.CreateAdjacentRelationBetweenFaultsAndFaces();
     }
 
-    @Override
-    public void createNodes(String facePath, String boundaryPath) {
-        saveFaces();//读取面要素并存入数据库
+    private void createNodes() {
+        System.out.println("建立地层要素");
+        saveStrata();//读取地层要素并存入数据库
+        System.out.println("建立地质界线要素、断层要素");
         saveBoundaries();//读取地层界线及断层数据并存入数据库
+        relationDao.setAllNodesId();
     }
 
-    private void saveTimeRelationship() {
+    private void createTimeRelationship() {
         //添加同时期地层间的关系
-        inferSameTimeOnStrata();
-    }
-
-    private void saveSpatialRelationship() {
-        relationDao.CreateAdjacentRelationBetweenFacesFromBoundaries();
-        relationDao.CreateContainsRelationBetweenFacesFromBoundaries();
+        inferSameTypeOnStrata();
     }
 
     @Override
@@ -260,7 +261,7 @@ public class KGServiceImpl implements KGService {
         if (relationships != null && nodes != null) {
             knowledgeGraph.setRelationships(relationships);
             knowledgeGraph.setNodes(nodes);
-            System.out.println(nodes);
+//            System.out.println(nodes);
             lightenKnowledgeGraph(knowledgeGraph);
             return knowledgeGraph;
         }
@@ -269,7 +270,12 @@ public class KGServiceImpl implements KGService {
 
     @Override
     public KnowledgeGraph search(String cypher) {
-        return neo4jUtil.result2KG(neo4jUtil.RunCypher(cypher));
+        System.out.println("查询Cypher：" + cypher);
+        KnowledgeGraph result = neo4jUtil.result2KG(neo4jUtil.RunCypher(cypher));
+        if (result.getNodes().size() != 0) {
+            System.out.println("Cypher查询成功！");
+        }
+        return result;
     }
 
     @Override
@@ -284,22 +290,50 @@ public class KGServiceImpl implements KGService {
         return neo4jUtil.result2KG(neo4jUtil.RunCypher(cypher));
     }
 
+    /**
+     * 创建断层间切割关系
+     */
+    @Override
+    public void createGeologicalRelationBetweenFaults() {
+        createCuttingThroughRelationOnFaults();
+        createCuttingOffRelationOnFaults();
+        createMutuallyCuttingRelationOnFaults();
+    }
+
+    @Override
+    public void createGeologicalRelationBetweenFaultsAndStrata() {
+        relationDao.createCuttingRelationBetweenFaultsAndStrata();
+        relationDao.setBoundaryOnFaultEnd();
+        relationDao.createGlandRelationBetweenFaultsAndStrata();
+        //若压盖断层的地层被该断层切割，则为假性压盖，应当删除
+        relationDao.deleteFakeGlandRelationship();
+    }
+
+    @Override
+    public void createGeologicalRelation() {
+        createGeologicalRelationBetweenFaults();
+        createGeologicalRelationBetweenFaultsAndStrata();
+    }
+
     private void lightenKnowledgeGraph(KnowledgeGraph knowledgeGraph) {
         List<ScenarioRelation> relationships = knowledgeGraph.getRelationships();
         List<Object> nodes = knowledgeGraph.getNodes();
-        for (ScenarioRelation sr :
-                relationships) {
+        for (ScenarioRelation sr : relationships) {
             sr.setStartNode(sr.getSource().getId());
             sr.setEndNode(sr.getTarget().getId());
             sr.setSource(null);
             sr.setTarget(null);
         }
-        for (Object node :
-                nodes) {
-            if (node instanceof Face) {
-                Face face = (Face) node;
-                face.getAdjacent().clear();
-                face.getBelong().clear();
+//        int index = 0;
+        for (Object node : nodes) {
+//            if(node instanceof ScenarioNode){
+//                ScenarioNode scenarioNode = (ScenarioNode) node;
+//                scenarioNode.setId((Long) index++);
+//            }
+            if (node instanceof Stratum) {
+                Stratum stratum = (Stratum) node;
+                stratum.getAdjacent().clear();
+                stratum.getBelong().clear();
             } else if (node instanceof Boundary) {
                 Boundary boundary = (Boundary) node;
                 boundary.getAdjacent().clear();
@@ -316,44 +350,44 @@ public class KGServiceImpl implements KGService {
         basicNodeDao.clearAll();
     }
 
-    private void saveFaces() {
-        Layer faceLayer = geoMap.getFaceLayer();
+    private void saveStrata() {
+        Layer stratumLayer = geoMap.getStratumLayer();
 
-        if (null == faceLayer) {
+        if (null == stratumLayer) {
             System.out.println("无面图层！");
             return;
         }
-        FeatureDefn featureDefn = faceLayer.GetLayerDefn();
+        FeatureDefn featureDefn = stratumLayer.GetLayerDefn();
 
-        long numFeature = faceLayer.GetFeatureCount(0);
+        long numFeature = stratumLayer.GetFeatureCount(0);
         Feature feature;
         double[] env = new double[4];
 
         //创建地层节点
         for (int i = 0; i < numFeature; ++i) {
-            feature = faceLayer.GetFeature(i);
-            Face face = new Face();
-            face.setFid(i);
-            face.setArea(feature.GetGeometryRef().Area());
+            feature = stratumLayer.GetFeature(i);
+            Stratum stratum = new Stratum();
+            stratum.setFid(i);
+            stratum.setArea(feature.GetGeometryRef().Area());
             feature.GetGeometryRef().GetEnvelope(env);
-            face.setEnvelope(env);
-            face.setPosition(new double[]{(env[0] + (env[0] - env[1]) / 2), (env[2] + (env[2] - env[3]) / 2)});
+            stratum.setEnvelope(env);
+            stratum.setPosition(new double[]{(env[0] + (env[1] - env[0]) / 2.0), (env[2] + (env[3] - env[2]) / 2.0)});
 
-            if (-1 != faceLayer.FindFieldIndex("Type", 0)) {
+            if (-1 != stratumLayer.FindFieldIndex("Type", 0)) {
                 String featureType = feature.GetFieldAsString("Type");
                 if (Objects.equals(featureType, "Sedimentary")) {
-                    face.setStratumType(StratumType.Sedimentary);
+                    stratum.setStratumType(StratumType.Sedimentary);
 //                    face.setCenter_y(feature.GetGeometryRef().Centroid().GetY());
                 } else if ((Objects.equals(featureType, "Magmatic")))
-                    face.setStratumType(StratumType.Magmatic);
+                    stratum.setStratumType(StratumType.Magmatic);
             }
 
-            if (-1 != faceLayer.FindFieldIndex("name", 0)) {
-                face.setNodeName(feature.GetFieldAsString("name"));
-            } else if (-1 != faceLayer.FindFieldIndex("S_Name", 0)) {
-                face.setNodeName(feature.GetFieldAsString("S_Name"));
+            if (-1 != stratumLayer.FindFieldIndex("name", 0)) {
+                stratum.setNodeName(feature.GetFieldAsString("name"));
+            } else if (-1 != stratumLayer.FindFieldIndex("S_Name", 0)) {
+                stratum.setNodeName(feature.GetFieldAsString("S_Name"));
             } else {
-                face.setNodeName(Integer.toString(i));
+                stratum.setNodeName(Integer.toString(i));
             }
 
 //            Geometry pointsGeometry = feature.GetGeometryRef().GetGeometryRef(0);
@@ -362,39 +396,48 @@ public class KGServiceImpl implements KGService {
 //            }
 
             //获取要素属性
-            readFeatureAttribute(featureDefn, feature, face);
-            if (-1 != faceLayer.FindFieldIndex("name", 0)) {
+            readFeatureAttribute(featureDefn, feature, stratum);
+            if (-1 != stratumLayer.FindFieldIndex("name", 0)) {
                 String stratumType = feature.GetFieldAsString("name");
                 //岩浆岩类型并不在年代表中，因此记为负数
-                face.setAgeIndex(stratigraphicChronology.getOrDefault(stratumType, -1));
+                if (stratigraphicChronology == null) {
+                    System.out.println("无地层年代表");
+                } else {
+                    Map<String, Integer> scm = stratigraphicChronology.getStratigraphicChronologyMap();
+                    if (scm != null && scm.size() != 0) {
+                        stratum.setAgeIndex(scm.getOrDefault(stratumType, -1));
+                    }
+                }
             }
 
             //地层节点存入库中
-            saveNode(face);
-            geoMap.addFace(face);
+            System.out.println("创建地层节点：" + i + "/" + numFeature + "[" + stratum + "]");
+            saveNode(stratum);
+            geoMap.addStratum(stratum);
 
+            //todo 地质事件节点，及事件节点与地质元素、构造节点的关系的建立从本方法中独立出来
             //形成事件存入库中，并建立地层-形成事件的关系
-//            GeoEvent geoEvent;
-//            List<GeoEvent> geoEvents;
-//            if (geoMap.getEvents().containsKey(face.getNodeName()))
-//                saveRelation(new SubjectRelation(geoMap.getEvents().get(face.getNodeName()), face));
-//            else if (!(geoEvents = findGeoEventBySubjectName(face.getNodeName())).isEmpty()) {
-//                saveRelation(new SubjectRelation(geoEvents.get(0), face));
-//            } else {
-//                geoEvent = new GeoEvent(face);
-//                geoMap.addEvent(geoEvent);
-//                saveNode(geoEvent);
-//                saveRelation(new SubjectRelation(geoEvent, face));
-//            }
+            GeoEvent geoEvent;
+            List<GeoEvent> geoEvents;
+            if (geoMap.getEvents().containsKey(stratum.getNodeName()))
+                saveRelation(new SubjectRelation(geoMap.getEvents().get(stratum.getNodeName()), stratum));
+            else if (!(geoEvents = findGeoEventBySubjectName(stratum.getNodeName())).isEmpty()) {
+                saveRelation(new SubjectRelation(geoEvents.get(0), stratum));
+            } else {
+                geoEvent = new GeoEvent(stratum);
+                geoMap.addEvent(geoEvent);
+                saveNode(geoEvent);
+                saveRelation(new SubjectRelation(geoEvent, stratum));
+            }
         }
     }
 
     /**
      * 设置地层年代序号
      *
-     * @param face
+     * @param stratum
      */
-    private void SetAgeIndex(Face face) {
+    private void SetAgeIndex(Stratum stratum) {
 
     }
 
@@ -442,7 +485,12 @@ public class KGServiceImpl implements KGService {
             boundary.setFid(i);
 
             //抽取界线几何信息
-            double[][] vertices = feature.GetGeometryRef().GetPoints();
+            double[][] vertices = new double[0][];
+            if (feature.GetGeometryRef().GetPointCount() != 0) {
+                vertices = feature.GetGeometryRef().GetPoints();
+            } else if (feature.GetGeometryRef().GetGeometryRef(0).GetPointCount() != 0) {
+                vertices = feature.GetGeometryRef().GetGeometryRef(0).GetPoints();
+            }
             boundary.setStrike(GeometryUtil.calLineStrike(vertices, false));
 
             //断层
@@ -460,6 +508,7 @@ public class KGServiceImpl implements KGService {
                     fault.setCode(feature.GetFieldAsString("code"));
 
                     //加入新断层
+                    System.out.println("创建断层节点" + "[" + fault + "]");
                     saveNode(fault);
                     saveRelation(new BelongRelation(boundary, fault));
                     //加入新断层事件
@@ -471,29 +520,32 @@ public class KGServiceImpl implements KGService {
             readFeatureAttribute(featureDefn, feature, boundary);
 
             //添加新的界线
+            System.out.println("创建地质界线：" + i + "/" + numFeature);
             saveNode(boundary);
             geoMap.addBoundary(boundary);
 
             //生成线面拓扑关系
-            int fid;
-            Face face;
+            int lfid = -1, rfid = -1;
+            Stratum stratum;
             if (-1 != boundaryLayer.FindFieldIndex("LEFT_FID", 0) && -1 != feature.GetFieldAsInteger("LEFT_FID")) {
-                fid = feature.GetFieldAsInteger("LEFT_FID");
-                if (geoMap.getFaces().size() > fid)
-                    face = geoMap.getFaces().get(fid);
+                lfid = feature.GetFieldAsInteger("LEFT_FID");
+                if (geoMap.getStrata().size() > lfid)
+                    stratum = geoMap.getStrata().get(lfid);
                 else
-                    face = findFaceById(fid).get(0);
-                if (face != null)//判断界线是否是地层上边界或下边界
-                    saveRelation(new BelongRelation(boundary, face).setBelongType(TopologyUtil.JudgeEdgeAtTopOrBottomOfFace(feature.GetGeometryRef(), true)));
+                    stratum = findFaceById(lfid).get(0);
+                if (stratum != null)//判断界线是否是地层上边界或下边界
+                    saveRelation(new BelongRelation(boundary, stratum).setBelongType(TopologyUtil.JudgeEdgeAtTopOrBottomOfFace(feature.GetGeometryRef(), true)));
             }
             if (-1 != boundaryLayer.FindFieldIndex("RIGHT_FID", 0) && -1 != feature.GetFieldAsInteger("RIGHT_FID")) {
-                fid = feature.GetFieldAsInteger("RIGHT_FID");
-                if (geoMap.getFaces().size() > fid)
-                    face = geoMap.getFaces().get(fid);
-                else
-                    face = findFaceById(fid).get(0);
-                if (face != null)//判断界线是否是地层上边界或下边界
-                    saveRelation(new BelongRelation(boundary, face).setBelongType(TopologyUtil.JudgeEdgeAtTopOrBottomOfFace(feature.GetGeometryRef(), false)));
+                rfid = feature.GetFieldAsInteger("RIGHT_FID");
+                if (lfid != rfid) {
+                    if (geoMap.getStrata().size() > rfid)
+                        stratum = geoMap.getStrata().get(rfid);
+                    else
+                        stratum = findFaceById(rfid).get(0);
+                    if (stratum != null)//判断界线是否是地层上边界或下边界
+                        saveRelation(new BelongRelation(boundary, stratum).setBelongType(TopologyUtil.JudgeEdgeAtTopOrBottomOfFace(feature.GetGeometryRef(), false)));
+                }
             }
         }
     }
@@ -507,7 +559,6 @@ public class KGServiceImpl implements KGService {
         Feature feature;
         Geometry boundaryGeoI, boundaryGeoJ;
         Boundary boundaryi = null, boundaryj = null;
-        List<Boundary> boundariesi, boundariesj;
         long numFeature = boundaryLayer.GetFeatureCount(0);
         Map<Integer, Boundary> boundaryMap = findAllBoundaryMap();
 
@@ -524,12 +575,10 @@ public class KGServiceImpl implements KGService {
                         && Math.abs(boundaryGeoI.GetY(0) - boundaryGeoJ.GetY(boundaryGeoJ.GetPointCount() - 1)) <= 0.001)
                         || (Math.abs(boundaryGeoI.GetX(boundaryGeoI.GetPointCount() - 1) - boundaryGeoJ.GetX(0)) <= 0.001
                         && Math.abs(boundaryGeoI.GetY(boundaryGeoI.GetPointCount() - 1) - boundaryGeoJ.GetY(0)) <= 0.001)) {
-//                if (boundaryGeoI.Buffer(0.001).Intersect(boundaryLayer.GetFeature(j).GetGeometryRef().Buffer(0.001))) {
 
                     //建立边界邻接关系
                     if (geoMap.getBoundaries().size() > i)
                         boundaryi = geoMap.getBoundaries().get(i);
-//                    else if (!(boundariesi = findBoundaryByFid(i)).isEmpty())
                     else if (boundaryMap.containsKey(i))
                         boundaryi = boundaryMap.get(i);
                     if (geoMap.getBoundaries().size() > j)
@@ -537,7 +586,7 @@ public class KGServiceImpl implements KGService {
                     else if (boundaryMap.containsKey(j))
                         boundaryj = boundaryMap.get(j);
                     if (boundaryi != null && boundaryj != null) {
-//                        System.out.print("添加边界邻接关系:");
+                        System.out.println("添加地质界线" + i + "/" + numFeature + "和" + j + "之间的邻接关系:");
                         saveRelation(new AdjacentRelation(boundaryi, boundaryj));
                         saveRelation(new AdjacentRelation(boundaryj, boundaryi));
                         //计算夹角
@@ -547,5 +596,46 @@ public class KGServiceImpl implements KGService {
             }
         }
     }
+
+    /**
+     * 根据地层年代表获取沉积事件时间关系
+     */
+//    private void CreateTemporalRelationshipBetweenDepositionEvents() {
+//        if (stratigraphicChronology == null) {
+//            System.out.println("无地层年代表");
+//            return;
+//        }
+//        List<String> scl = stratigraphicChronology.getStratigraphicChronologyList();
+//        if (scl == null || scl.size() == 0) {
+//            return;
+//        }
+//        String stratumName0;
+//        List<GeoEvent> events0 = null;
+//        int index = 0;
+//        int size = scl.size();
+//        for (; index < size; ++index) {
+//            stratumName0 = scl.get(index);
+//            events0 = geoEventDao.findByName(stratumName0);
+//            if (events0 != null && events0.size() != 0) {
+//                break;
+//            }
+//        }
+//        index++;
+//        if (index >= size) {
+//            return;
+//        }
+//        for (; index < size; ++index) {
+//            String stratumName1 = scl.get(index);
+//            List<GeoEvent> events1 = geoEventDao.findByName(stratumName1);
+//            if (events0 != null && events0.size() != 0 && events1 != null && events1.size() != 0) {
+//                GeoEvent event0 = events0.get(0);
+//                GeoEvent event1 = events1.get(0);
+//                relationDao.save(new EarlierThanRelation(event1, event0));
+//                stratumName0 = stratumName1;
+//                events0 = geoEventDao.findByName(stratumName0);
+//            }
+//        }
+//        System.out.println("根据地层年代表获取沉积事件时间关系成功");
+//    }
 
 }

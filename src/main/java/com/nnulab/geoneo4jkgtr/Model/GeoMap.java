@@ -4,6 +4,7 @@ import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Boundary;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Chronology;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Face;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.GeoEvent;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Stratum;
 import com.nnulab.geoneo4jkgtr.Util.GdalUtil;
 import lombok.Data;
 import org.gdal.ogr.Layer;
@@ -19,18 +20,18 @@ import java.util.HashMap;
 public class GeoMap {
 
     private int id;
-    private Layer faceLayer;
+    private Layer stratumLayer;
     private Layer boundaryLayer;
-    private ArrayList<Face> faces = new ArrayList<>();
+    private ArrayList<Stratum> strata = new ArrayList<>();
     private HashMap<String, GeoEvent> events = new HashMap<>();
     private ArrayList<Boundary> boundaries = new ArrayList<>();
     private Chronology chronology = new Chronology();
 
     public GeoMap(String facePath, String boundaryPath) {
-        //读取面要素
-        faceLayer = GdalUtil.getLayerByPath(facePath);
-        if (null != faceLayer)
-            setFaceLayer(faceLayer);
+        //读取地层要素
+        stratumLayer = GdalUtil.getLayerByPath(facePath);
+        if (null != stratumLayer)
+            setStratumLayer(stratumLayer);
         //读取地质界线
         boundaryLayer = GdalUtil.getLayerByPath(boundaryPath);
         if (null != boundaryLayer)
@@ -55,8 +56,8 @@ public class GeoMap {
 //        chronology.getList().add("B");
     }
 
-    public void addFace(Face face) {
-        this.faces.add(face);
+    public void addStratum(Stratum stratum) {
+        this.strata.add(stratum);
     }
 
     public void addEvent(GeoEvent geoEvent) {

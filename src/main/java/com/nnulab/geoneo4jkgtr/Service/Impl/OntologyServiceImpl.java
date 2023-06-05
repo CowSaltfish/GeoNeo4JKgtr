@@ -10,7 +10,7 @@ import com.nnulab.geoneo4jkgtr.Service.OntologyService;
 import com.nnulab.geoneo4jkgtr.Util.GeometryUtil;
 import com.nnulab.geoneo4jkgtr.Util.Neo4jUtil;
 import com.nnulab.geoneo4jkgtr.Util.StringUtil;
-import org.neo4j.driver.v1.types.Path;
+//import org.neo4j.driver.v1.types.Path;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;

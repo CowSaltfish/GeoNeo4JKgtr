@@ -1,7 +1,8 @@
 package com.nnulab.geoneo4jkgtr.Service.Impl;
 
-import com.nnulab.geoneo4jkgtr.Dao.FaceDao;
+import com.nnulab.geoneo4jkgtr.Dao.StratumDao;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Face;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Stratum;
 import com.nnulab.geoneo4jkgtr.Service.FaceService;
 import org.springframework.stereotype.Service;
 
@@ -16,10 +17,10 @@ import java.util.List;
 public class FaceServiceImpl implements FaceService {
 
     @Resource
-    private FaceDao faceDao;
+    private StratumDao stratumDao;
 
     @Override
-    public List<Face> findSedimentaryRockArea() {
-        return faceDao.findSedimentaryRockArea();
+    public List<Stratum> findSedimentaryRockArea() {
+        return stratumDao.findSedimentaryRockArea();
     }
 }

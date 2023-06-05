@@ -1,21 +1,20 @@
 package com.nnulab.geoneo4jkgtr.Service;
 
-import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Boundary;
-import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Face;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Basic.BasicRelation;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.*;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Relations.SpatialRelationship.AdjacentRelation;
 import com.nnulab.geoneo4jkgtr.Model.KnowledgeGraph;
-import com.nnulab.geoneo4jkgtr.Model.request.KGCreateRequest;
 import com.nnulab.geoneo4jkgtr.Util.GdalUtil;
 import junit.framework.TestCase;
+import org.gdal.ogr.Feature;
+import org.gdal.ogr.Layer;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author : LiuXianYu
@@ -28,23 +27,25 @@ public class KGServiceTest extends TestCase {
     @Autowired
     private KGService kgService;
 
+    @Autowired
+    private EventTemporalInterpretService eventTemporalInterpretService;
+
     @Test
     public void testCreate() {
 
         GdalUtil.init();
 
         //南京主要断层
-//        KGCreateRequest kgCreateRequest = new KGCreateRequest();
-//        kgCreateRequest.setBoundaryPath("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\NanjingFaults\\fault.shp");
-//        kgController.create(kgCreateRequest);
+//        kgService.create("", "E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\NanjingFaults\\fault.shp");
 
         //基金本子上的剖面图
-//        KGCreateRequest kgCreateRequest = new KGCreateRequest();
-////        kgCreateRequest.setFacePath("C:\\Users\\lab\\Desktop\\知识图谱地质事件时序推理\\Data\\StudyData\\StudyData\\stratas.shp");
-////        kgCreateRequest.setBoundaryPath("C:\\Users\\lab\\Desktop\\知识图谱地质事件时序推理\\Data\\StudyData\\StudyData\\boundary.shp");
-//        kgCreateRequest.setFacePath("D:\\13222\\Desktop\\DesktopFiles\\ExperimentData\\MyProject\\KGTR\\data\\StudyData\\StudyData\\stratas.shp");
-//        kgCreateRequest.setBoundaryPath("D:\\13222\\Desktop\\DesktopFiles\\ExperimentData\\MyProject\\KGTR\\data\\StudyData\\StudyData\\boundary.shp");
-//        kgController.create(kgCreateRequest);
+//        kgService.create("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\StudyData\\StudyData\\stratas.shp",
+//                "E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\StudyData\\StudyData\\boundary.shp");
+
+        //夏邦栋剖面图
+//        kgService.create("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\Intrusion\\Test1\\strata.shp",
+//                "E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\Intrusion\\Test1\\boundary.shp");
+
 
         //五龙山剖面图
 //        kgController.createKG("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\五龙山剖面图\\剖面地层.shp",
@@ -68,13 +69,61 @@ public class KGServiceTest extends TestCase {
 //                "E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\KGQuery\\Nanjing\\3857\\qls_boundaries2.shp",
 //                "E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Doc\\地层年代表.csv");
         //南京矢量地质图
-        kgService.create("D:\\13222\\Desktop\\DesktopFiles\\ExperimentData\\MyProject\\KGTR\\data\\Nanjing\\3857\\strata3857.shp",
-                "D:\\13222\\Desktop\\DesktopFiles\\ExperimentData\\MyProject\\KGTR\\data\\Nanjing\\3857\\qls_boundaries2.shp",
-                "D:\\13222\\Desktop\\DesktopFiles\\ExperimentData\\MyProject\\KGTR\\data\\Nanjing\\地层年代表.csv");
+//        kgService.create("D:\\13222\\Desktop\\DesktopFiles\\ExperimentData\\MyProject\\KGTR\\data\\Nanjing\\3857\\strata3857.shp",
+//                "D:\\13222\\Desktop\\DesktopFiles\\ExperimentData\\MyProject\\KGTR\\data\\Nanjing\\3857\\qls_boundaries2.shp",
+//                "D:\\13222\\Desktop\\DesktopFiles\\ExperimentData\\MyProject\\KGTR\\data\\Nanjing\\地层年代表.csv");
 
         //南京知识图谱融合
-//        kgService.create("D:\\13222\\Desktop\\DesktopFiles\\ExperimentData\\MyProject\\KGTR\\data\\NanjingSection\\拓塘镇\\相关地层.shp",
-//                "D:\\13222\\Desktop\\DesktopFiles\\ExperimentData\\MyProject\\KGTR\\data\\NanjingSection\\拓塘镇\\相关地层边界.shp");
+        kgService.create("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\zhetangzhen\\zhetangzhen_strata.shp",
+                "E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\zhetangzhen\\zhetangzhen_boundary.shp");
+
+//        kgService.create("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\zhetangzhen\\TTII_strata.shp",
+//                "E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\zhetangzhen\\TTII_boundary.shp");
+//
+//        kgService.create("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\zhetangzhen\\TTIIII_strata.shp",
+//                "E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\zhetangzhen\\TTIIII_boundary.shp");
+
+        //6原型系统数据
+//        kgService.create("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\NanjingSection\\system6\\strata3857.shp",
+//                "E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\NanjingSection\\system6\\boundaries3857.shp");
+
+//        kgService.create("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\zhetangzhen\\strata_merge.shp",
+//                "E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\zhetangzhen\\boundaries_merge.shp");
+
+        //断层组合数据
+//        kgService.create("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\temp\\nanjing_voronoi.shp",
+//                "E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\temp\\nanjing_voronoi_boundaries.shp");
+
+        //栖霞山断层
+//        kgService.create("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\FaultTemporalInterpret\\qxs\\strata.shp",
+//                "E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\FaultTemporalInterpret\\qxs\\boundaries1.shp",
+//                "E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Doc\\地层年代表2.csv");
+
+        //内华达断层
+//        kgService.create("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\FaultTemporalInterpret\\nhd\\strata.shp",
+//                "E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\FaultTemporalInterpret\\nhd\\boundary1_dissolve1.shp",
+//                "E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\FaultTemporalInterpret\\nhd\\StratigraphicSequenceTable.csv");
+    }
+
+    /**
+     * 创建要素间地质关系
+     */
+    @Test
+    public void testCreateSpatialTopologyRelationBetweenFaults() {
+        kgService.createGeologicalRelation();
+    }
+
+//    @Test
+//    public void testCreateGeologicalRelationBetweenFaultsAndStrata(){
+//        kgService.createGeologicalRelationBetweenFaultsAndStrata();
+//    }
+
+    /**
+     * 推测事件时间关系
+     */
+    @Test
+    public void inferTimeSeries() {
+        eventTemporalInterpretService.inferTemporalRelationshipOfFaultsAndStrata();
     }
 
     @Test
@@ -119,7 +168,7 @@ public class KGServiceTest extends TestCase {
      * 模拟用户基于本系统进行环形构造查找
      */
     @Test
-    public void testRingStructureQuery(){
+    public void testRingStructureQuery() {
         GdalUtil.init();
 
         //嵌套模式获取地层
@@ -153,7 +202,7 @@ public class KGServiceTest extends TestCase {
      * 模拟用户基于本系统进行断层构造查找
      */
     @Test
-    public void testFaultStructureQuery(){
+    public void testFaultStructureQuery() {
         GdalUtil.init();
 
         //近直界线匹配
@@ -174,5 +223,51 @@ public class KGServiceTest extends TestCase {
         }
         GdalUtil.createNewShpByLayerWithId("D:\\13222\\Desktop\\DesktopFiles\\ExperimentData\\MyProject\\KGTR\\data\\Nanjing\\3857\\boundaries.shp",
                 "D:\\13222\\Desktop\\DesktopFiles\\ExperimentData\\MyProject\\KGTR\\data\\Nanjing\\3857\\fault\\boundaries_straight.shp", Ids);
+    }
+
+    /**
+     * 基于ArcGIS生成的断层与地层空间连接生成的shp建立断层切割地层关系（图5.10）
+     */
+    @Test
+    public void createFaultSliceStrataRelationship() {
+        //读取断层与地层空间连接生成的shp
+        GdalUtil.init();
+        Layer faultSliceStrataLayer = GdalUtil.getLayerByPath("E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Data\\NanjingFaults\\fault_slice_strata.shp");
+        long featureCount = Objects.requireNonNull(faultSliceStrataLayer).GetFeatureCount();
+        Map<Integer, Stratum> stratumMap = new HashMap<>();
+        for (int i = 0; i < featureCount; i++) {
+            Feature feature = faultSliceStrataLayer.GetFeature(i);
+            int faceId = -1;
+            String faceName;
+            if (-1 != faultSliceStrataLayer.FindFieldIndex("id", 0)) {
+                faceId = feature.GetFieldAsInteger("id");
+            }
+            Stratum stratum;
+            if (!stratumMap.containsKey(faceId)) {
+                //创建地层实体
+                stratum = new Stratum();
+                stratum.setFid(i);
+                stratum.setArea(feature.GetGeometryRef().Area());
+                if (-1 != faultSliceStrataLayer.FindFieldIndex("name_1", 0)) {
+                    stratum.setNodeName(feature.GetFieldAsString("name_1"));
+                }
+                //地层节点存入库中
+                kgService.saveNode(stratum);
+                stratumMap.put(faceId, stratum);
+            } else {
+                stratum = stratumMap.get(faceId);
+            }
+            //建立切割关系
+            if (-1 != faultSliceStrataLayer.FindFieldIndex("name", 0)) {
+                String faultName = feature.GetFieldAsString("name");
+                List<Fault> faults = kgService.findFaultByName(faultName);
+                if (stratum != null && faults.size() == 1)//判断界线是否是地层上边界或下边界
+                {
+                    BasicRelation slice = new BasicRelation(faults.get(0), stratum);
+                    slice.setType("slice");
+                    kgService.saveRelation(slice);
+                }
+            }
+        }
     }
 }

@@ -1,6 +1,7 @@
 package com.nnulab.geoneo4jkgtr.Util;
 
 import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Face;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Stratum;
 import org.apache.commons.lang3.ObjectUtils;
 
 import java.util.*;
@@ -113,11 +114,11 @@ public class StringUtil {
 
         for (int i = 0; i < faces.size(); ++i) {
             Object o = faces.get(i);
-            if (o instanceof Face) {
-                fidSet.add(((Face) faces.get(i)).getFid());
+            if (o instanceof Stratum) {
+                fidSet.add(((Stratum) faces.get(i)).getFid());
             } else if (o instanceof List<?>) {
                 for (int j = 0; j < ((List<?>) o).size(); ++j) {
-                    fidSet.add(((Face) ((List<?>) o).get(i)).getFid());
+                    fidSet.add(((Stratum) ((List<?>) o).get(i)).getFid());
                 }
             }
         }

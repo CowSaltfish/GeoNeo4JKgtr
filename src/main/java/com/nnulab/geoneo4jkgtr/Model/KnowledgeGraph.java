@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Basic.BasicRelation;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Basic.ScenarioRelation;
 import lombok.Data;
-import org.hibernate.validator.internal.xml.FieldType;
+//import org.hibernate.validator.internal.xml.FieldType;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Field;
 

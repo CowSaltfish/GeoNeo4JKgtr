@@ -3,6 +3,7 @@ package com.nnulab.geoneo4jkgtr.Service.Impl;
 import com.nnulab.geoneo4jkgtr.Dao.FoldDao;
 import com.nnulab.geoneo4jkgtr.Dao.KnowledgeQueryDao;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Face;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Stratum;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Vertex;
 import com.nnulab.geoneo4jkgtr.Service.KnowledgeQueryService;
 import com.nnulab.geoneo4jkgtr.Util.*;
@@ -38,18 +39,14 @@ public class KnowledgeQueryServiceImpl implements KnowledgeQueryService {
         String where;//用于获取结果节点的fid的where子句，方便展示
 
         //核部模式匹配
-        List<Face> cores = foldDao.matchCorePattern();
+        List<Stratum> cores = foldDao.matchCorePattern();
         where = StringUtil.getWhereFid(cores);
 
         //翼部模式匹配
-        List<List<Face>> swingPaths = new ArrayList<>();
+        List<List<Stratum>> swingPaths = new ArrayList<>();
         for (int i = 0; i < cores.size(); ++i) {
-            Face core = cores.get(i);
+            Stratum core = cores.get(i);
             int fid = core.getFid(), length = 5;
-
-//            if (fid != 5024) {
-//                continue;
-//            }
 
             System.out.println("翼步路径查找：" + i + "/" + cores.size() + "，当前核部fid为：" + core.getFid());
             if (fid == 5024) {//青龙山路径长度设为15，其他为5，但由于路径长度传参怎么都不成功，这里先这么写
@@ -64,13 +61,13 @@ public class KnowledgeQueryServiceImpl implements KnowledgeQueryService {
 
         //基于Louvain社区发现算法的两翼地层划分
 //        foldDao.divide2Wings();
-        List<List<List<Face>>> twoSwings = divide2Wings(swingPaths);
+        List<List<List<Stratum>>> twoSwings = divide2Wings(swingPaths);
 
         //褶皱构造化简
         simplifyFoldStructure(twoSwings);
 
         //对称重复模式匹配
-        foldDao.matchSymmetricalRepeatPattern();
+//        foldDao.matchSymmetricalRepeatPattern();
     }
 
 
@@ -80,10 +77,10 @@ public class KnowledgeQueryServiceImpl implements KnowledgeQueryService {
      * @param wings
      * @return
      */
-    private List<List<List<Face>>> divide2Wings(List<List<Face>> wings) {
+    private List<List<List<Stratum>>> divide2Wings(List<List<Stratum>> wings) {
         List<Double[]> dipDirectionOfWingPath = new ArrayList<>();
         //获取倾向向量集合
-        for (List<Face> wing : wings) {
+        for (List<Stratum> wing : wings) {
             double[][] vertices = new double[wing.size()][];
             for (int j = 0; j < wing.size(); ++j) {
                 Face stratum = wing.get(j);
@@ -157,8 +154,8 @@ public class KnowledgeQueryServiceImpl implements KnowledgeQueryService {
             oldCluster0Indexes.addAll(cluster0Indexes);
             oldCluster1Indexes.addAll(cluster1Indexes);
         }
-        List<List<List<Face>>> twoWing = new ArrayList<>();
-        List<List<Face>> wing0 = new ArrayList<>(), wing1 = new ArrayList<>();
+        List<List<List<Stratum>>> twoWing = new ArrayList<>();
+        List<List<Stratum>> wing0 = new ArrayList<>(), wing1 = new ArrayList<>();
         for (int i = 0; i < wings.size(); ++i) {
             if (cluster0Indexes.contains(i)) {
                 wing0.add(wings.get(i));
@@ -172,7 +169,7 @@ public class KnowledgeQueryServiceImpl implements KnowledgeQueryService {
         return twoWing;
     }
 
-    private void simplifyFoldStructure(List<List<List<Face>>> twoSwings) {
+    private void simplifyFoldStructure(List<List<List<Stratum>>> twoSwings) {
         //纵向化简
         //位于同一翼部路径，接触且同时代
 

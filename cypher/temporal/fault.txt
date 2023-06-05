@@ -1,0 +1,38 @@
+--断层切割地层--
+match (b:Boundary)-[:BELONG]->(s:Face)
+match (b:Boundary)-[:BELONG]->(f:Fault)
+create (f)-[:CUTTING]->(s)
+
+--定义断层两端地质界线--
+match (b1:Boundary)-[:BELONG]->(f:Fault)
+match (b2:Boundary)-[:ADJACENT]->(b1)
+match (b2)-[:BELONG]->(f)
+with b1, collect(b2) as cb2
+where size(cb2)=1
+// return b1.fid
+set b1.end_line='Y'
+
+--地层压盖断层--
+match (b1:Boundary)-[:ADJACENT]-(b2:Boundary)
+match (b2)-[:BELONG]->(s:Face)
+match (b1)-[:BELONG]->(f:Fault)
+where not exists ((f)-[:CUTTING]->(s)) and b1.end_line='Y'
+// return distinct s.fid,f.code
+with distinct s,f
+create (s)-[:GLAND{relationName:'压盖'}]->(f)
+
+--断层切割地层，地层早于断层--
+MATCH (f:Fault)-[r:CUTTING]->(s:Face)
+match (g1:GeoEvent)-[:SUBJECT]->(f)
+match (g2:GeoEvent)-[:SUBJECT]->(s)
+// RETURN p
+with distinct g2,g1
+create (g2)-[:EARLIERTHAN{relationName:'早于'}]->(g1)
+
+--地层压盖断层，断层早于地层--
+MATCH (f:Fault)<-[r:GLAND]-(s:Face)
+match (g1:GeoEvent)-[:SUBJECT]->(f)
+match (g2:GeoEvent)-[:SUBJECT]->(s)
+// RETURN p
+with distinct g2,g1
+create (g1)-[:EARLIERTHAN{relationName:'早于'}]->(g2)

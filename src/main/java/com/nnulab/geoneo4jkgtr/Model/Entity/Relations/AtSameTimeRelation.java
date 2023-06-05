@@ -5,6 +5,7 @@ import com.nnulab.geoneo4jkgtr.Model.Entity.Basic.GeoNode;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Basic.ScenarioRelation;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Face;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Fault;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Stratum;
 import org.neo4j.ogm.annotation.Property;
 import org.neo4j.ogm.annotation.RelationshipEntity;
 
@@ -21,7 +22,7 @@ public class AtSameTimeRelation extends ScenarioRelation implements BasicRelatio
 
     }
 
-    public <T extends GeoNode> AtSameTimeRelation(T source, Face target) {
+    public <T extends GeoNode> AtSameTimeRelation(T source, Stratum target) {
         super(source, target);
     }
 

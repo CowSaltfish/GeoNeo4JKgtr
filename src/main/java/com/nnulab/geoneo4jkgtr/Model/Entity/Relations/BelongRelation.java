@@ -6,6 +6,7 @@ import com.nnulab.geoneo4jkgtr.Model.Entity.Basic.GeoNode;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Basic.ScenarioRelation;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Face;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Fault;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Stratum;
 import org.neo4j.ogm.annotation.Property;
 import org.neo4j.ogm.annotation.RelationshipEntity;
 
@@ -16,7 +17,10 @@ import org.neo4j.ogm.annotation.RelationshipEntity;
 @RelationshipEntity(type = "BELONG")
 public class BelongRelation extends ScenarioRelation implements BasicRelationInterface {
     @Property
-    private String relationName = "属于";
+    private String relationName = "关联";
+
+    @Property
+    private String relationName_en = "Incidence";
 
     private String belongType = "others";//剖面图——top:边界为地层上边界，bottom:边界为地层下边界；平面图——outer:边界为广义环状地层的外边界，inner:边界为环状地层的内边界
 
@@ -28,7 +32,7 @@ public class BelongRelation extends ScenarioRelation implements BasicRelationInt
         super(source, target);
     }
 
-    public <T extends GeoNode> BelongRelation(T source, Face target) {
+    public <T extends GeoNode> BelongRelation(T source, Stratum target) {
         super(source, target);
 
     }

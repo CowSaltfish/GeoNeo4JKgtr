@@ -6,6 +6,7 @@ import com.nnulab.geoneo4jkgtr.Model.Entity.Basic.GeoNode;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Basic.ScenarioRelation;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Face;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Fault;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Stratum;
 import org.neo4j.ogm.annotation.Property;
 import org.neo4j.ogm.annotation.RelationshipEntity;
 
@@ -18,11 +19,14 @@ public class SubjectRelation  extends ScenarioRelation implements BasicRelationI
     @Property
     private String relationName = "发生于";
 
+    @Property
+    private String relationName_en = "Subject";
+
     public SubjectRelation() {
 
     }
 
-    public <T extends GeoNode> SubjectRelation(T source, Face target) {
+    public <T extends GeoNode> SubjectRelation(T source, Stratum target) {
         super(source, target);
     }
 

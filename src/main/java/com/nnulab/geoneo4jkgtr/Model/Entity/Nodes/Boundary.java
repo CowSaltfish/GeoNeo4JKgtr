@@ -4,6 +4,7 @@ import com.nnulab.geoneo4jkgtr.Model.Entity.Relations.SpatialRelationship.Adjace
 import com.nnulab.geoneo4jkgtr.Model.Entity.Relations.BelongRelation;
 import org.neo4j.ogm.annotation.NodeEntity;
 import org.neo4j.ogm.annotation.Relationship;
+//import org.springframework.data.neo4j.core.schema.Relationship;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -15,11 +16,11 @@ import java.util.Set;
 @NodeEntity
 public class Boundary extends Line {
 
-    public HashSet<Face> adjFace;
+    public HashSet<Stratum> adjStratum;
 
     public HashSet<Boundary> adjBoundary;
 
-    @Relationship(type = "ADJACENT", direction = Relationship.UNDIRECTED)
+    @Relationship(type = "ADJACENT")
     private Set<AdjacentRelation> adjacent;
 
     @Relationship(type = "BELONG", direction = Relationship.OUTGOING)
@@ -27,17 +28,17 @@ public class Boundary extends Line {
 
     public Boundary() {
         super();
-        adjFace = new HashSet<>();
+        adjStratum = new HashSet<>();
         adjBoundary = new HashSet<>();
         setLabelName("Boundary");
     }
 
-    public HashSet<Face> getAdjFace() {
-        return adjFace;
+    public HashSet<Stratum> getAdjStratum() {
+        return adjStratum;
     }
 
-    public void setAdjFace(HashSet<Face> adjFace) {
-        this.adjFace = adjFace;
+    public void setAdjFace(HashSet<Stratum> adjFace) {
+        this.adjStratum = adjFace;
     }
 
     public HashSet<Boundary> getAdjBoundary() {
@@ -52,8 +53,8 @@ public class Boundary extends Line {
         adjBoundary.add(boundary);
     }
 
-    public void addAdjFace(Face face) {
-        adjFace.add(face);
+    public void addAdjFace(Stratum stratum) {
+        adjStratum.add(stratum);
     }
 
     public Set<AdjacentRelation> getAdjacent() {

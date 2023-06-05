@@ -6,9 +6,9 @@ package com.nnulab.geoneo4jkgtr.Model.Entity.Basic;
  */
 public interface BasicNodeInterface {
 
-    Long getId();
-
-    void setId(Long id);
+//    Long getId();
+//
+//    void setId(Long id);
 
     int getFid();
 

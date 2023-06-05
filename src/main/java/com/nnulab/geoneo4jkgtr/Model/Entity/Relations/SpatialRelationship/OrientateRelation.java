@@ -16,6 +16,9 @@ public class OrientateRelation extends ScenarioRelation implements BasicRelation
     @Property
     private String relationName = "方向";
 
+    @Property
+    private String relationName_en = "Orientate";
+
     public OrientateRelation() {
 
     }

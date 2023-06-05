@@ -7,7 +7,7 @@ import org.neo4j.ogm.annotation.NodeEntity;
  * @author : LiuXianYu
  * @date : 2022/3/29 15:49
  */
-@NodeEntity
+//@NodeEntity
 @Data
 public class Vertex{
     private double x;

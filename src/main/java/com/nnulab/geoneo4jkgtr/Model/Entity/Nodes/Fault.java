@@ -103,4 +103,12 @@ public class Fault extends Line {
     public void setMutuallyCutting(Set<MutuallyCuttingRelation> mutuallyCutting) {
         this.mutuallyCutting = mutuallyCutting;
     }
+
+    @Override
+    public String toString() {
+        return "Fault{" +
+                "name='" + name + '\'' +
+                ", code='" + code + '\'' +
+                '}';
+    }
 }

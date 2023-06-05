@@ -1,6 +1,7 @@
 package com.nnulab.geoneo4jkgtr.Service;
 
 import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Face;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Stratum;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,5 +12,5 @@ import java.util.List;
  */
 public interface FaceService {
 
-    public List<Face> findSedimentaryRockArea();
+    public List<Stratum> findSedimentaryRockArea();
 }

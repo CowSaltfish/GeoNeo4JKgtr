@@ -4,6 +4,7 @@ import com.nnulab.geoneo4jkgtr.Model.Entity.Attitude;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Enum.GeometryForm;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Vertex;
 import lombok.Data;
+import org.neo4j.ogm.annotation.Properties;
 import org.neo4j.ogm.annotation.Property;
 
 import java.util.Map;
@@ -61,9 +62,11 @@ public class ScenarioNode extends BasicNode {
      */
     @Property
     private String times;
+
     /**
      * 理化属性（主要是属性表中的属性）
      */
+    @Properties
     private Map<String, Object> Attribute;
 
     public ScenarioNode() {

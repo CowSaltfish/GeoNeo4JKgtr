@@ -22,15 +22,9 @@ import java.util.Set;
 public class Face extends GeoNode {
 
     private List<Vertex> vertices = new ArrayList<>();
-    private StratumType stratumType;
     private double center_y = -1.0;
-//    private double area;
-    //minX,maxX,minY,maxY
-//    private double[] envelope = new double[4];
     //长短轴比例
     private double ratioLongShortAxis;
-    //地质年代序号（越小越老）
-    private int AgeIndex;
 
     @Relationship(type = "ADJACENT", direction = Relationship.UNDIRECTED)
     private Set<AdjacentRelation> adjacent;

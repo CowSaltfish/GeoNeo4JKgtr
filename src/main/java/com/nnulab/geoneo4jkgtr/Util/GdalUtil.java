@@ -189,7 +189,7 @@ public class GdalUtil {
     public static Layer getLayerByPath(String path) {
         String strDriverName = "ESRI Shapefile";
         org.gdal.ogr.Driver oDriver = ogr.GetDriverByName(strDriverName);
-        if (null == path)
+        if (null == path || "" == path)
             return null;
         DataSource dataSource = oDriver.Open(path);
         //dataSource.delete.txt();

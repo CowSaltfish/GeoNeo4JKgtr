@@ -17,6 +17,9 @@ public class MutuallyCuttingRelation extends ScenarioRelation implements BasicRe
     @Property
     private String relationName = "相交";
 
+    @Property
+    private String relationName_en = "Mutually Cutting";
+
     public MutuallyCuttingRelation() {
 
     }

@@ -2,10 +2,7 @@ package com.nnulab.geoneo4jkgtr.Service;
 
 import com.nnulab.geoneo4jkgtr.Model.Entity.Basic.BasicNode;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Basic.BasicRelation;
-import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Boundary;
-import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Face;
-import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.Fault;
-import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.GeoEvent;
+import com.nnulab.geoneo4jkgtr.Model.Entity.Nodes.*;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Relations.CuttingOffRelation;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Relations.CuttingThroughRelation;
 import com.nnulab.geoneo4jkgtr.Model.Entity.Relations.MutuallyCuttingRelation;
@@ -13,6 +10,7 @@ import com.nnulab.geoneo4jkgtr.Model.KnowledgeGraph;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * @author : LiuXianYu
@@ -20,15 +18,15 @@ import java.util.Map;
  */
 public interface KGService {
 
-    public <T extends BasicNode> T saveNode(T node);
+    <T extends BasicNode> T saveNode(T node);
 
-    public <T extends BasicRelation> T saveRelation(T relation);
+    <T extends BasicRelation> T saveRelation(T relation);
 
-    public void delete(long id);
+    void delete(long id);
 
     List<Fault> findFaultByName(String name);
 
-    List<Face> findFaceById(int id);
+    List<Stratum> findFaceById(int id);
 
     long getFaceCount();
 
@@ -36,29 +34,27 @@ public interface KGService {
 
     long getFaultCount();
 
-    Boundary findBoundaryById(long id);
+    Optional<Boundary> findBoundaryById(long id);
 
     Map<Integer, Boundary> findAllBoundaryMap();
 
     List<Boundary> findBoundaryByFid(int fid);
 
-    List<CuttingThroughRelation> inferCuttingThroughRelationOnFaults();
+    List<CuttingThroughRelation> createCuttingThroughRelationOnFaults();
 
-    List<CuttingOffRelation> inferCuttingOffRelationOnFaults();
+    List<CuttingOffRelation> createCuttingOffRelationOnFaults();
 
-    List<MutuallyCuttingRelation> inferMutuallyCuttingRelationOnFaults();
+    List<MutuallyCuttingRelation> createMutuallyCuttingRelationOnFaults();
 
-    void create(String facePath, String boundaryPath);
+    void create(String stratumPath, String boundaryPath);
 
-    void create(String facePath, String boundaryPath,String stratigraphicChronologyPath);
+    void create(String facePath, String boundaryPath, String stratigraphicChronologyPath);
 
     void clearAll();
 
-    void inferTimeSeriesOfFaults();
-
     void inferContactRelationshipOnStrata();
 
-    void inferSameTimeOnStrata();
+    void inferSameTypeOnStrata();
 
     void inferCuttingBetweenFaultsAndFaces();
 
@@ -70,13 +66,15 @@ public interface KGService {
 
     void inferTimeOfFaultsByStrata();
 
-    void CreateRelationshipBetweenFaces();
-
-    void createNodes(String facePath, String boundaryPath);
-
     KnowledgeGraph searchAllKG();
 
     KnowledgeGraph search(String cypher);
 
     KnowledgeGraph searchByOntology(String ontologyName);
+
+    void createGeologicalRelationBetweenFaults();
+
+    void createGeologicalRelationBetweenFaultsAndStrata();
+
+    void createGeologicalRelation();
 }

@@ -14,7 +14,10 @@ import org.neo4j.ogm.annotation.RelationshipEntity;
 @RelationshipEntity(type = "CUTTINGTHROUGH")
 public class CuttingThroughRelation extends ScenarioRelation implements BasicRelationInterface {
     @Property
-    private String relationName = "相交";
+    private String relationName = "切割";
+
+    @Property
+    private String relationName_en = "Cutting Through";
 
     public CuttingThroughRelation() {
 

@@ -6,7 +6,6 @@
 #spring.data.neo4j.password=lab_417
 #spring.data.neo4j.uri=http://localhost:7474
 
-
 spring:
   data:
     neo4j:
@@ -21,3 +20,11 @@ spring:
 server:
   port: 8081
 #    allow-bean-definition-overriding: true
+
+geoserver:
+  url: http://localhost:8100/geoserver
+  username: admin
+  password: geoserver
+  workspacename: geoserver
+  storename: geoserver
+  layername: temp

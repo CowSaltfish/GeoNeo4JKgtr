@@ -1,23 +1,20 @@
-package com.nnulab.geoneo4jkgtr.Dao.Impl;
+package com.nnulab.geoneo4jkgtr.Util;
 
-//import com.mongodb.WriteResult;
+import com.alibaba.fastjson.JSON;
 import com.mongodb.client.result.UpdateResult;
-import com.nnulab.geoneo4jkgtr.Dao.OntologyDao;
 import com.nnulab.geoneo4jkgtr.Model.KnowledgeGraph;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.data.mongodb.core.query.Update;
-import org.springframework.stereotype.Repository;
+
 import javax.annotation.Resource;
-import java.util.List;
 
 /**
  * @author : LiuXianYu
- * @date : 2022/12/1 22:03
+ * @date : 2023/5/15 15:49
  */
-@Repository
-public class OntologyDaoImpl implements OntologyDao {
+public class MongoDBUtil {
 
     @Resource
     private MongoTemplate mongoTemplate;
@@ -28,8 +25,7 @@ public class OntologyDaoImpl implements OntologyDao {
      *
      * @param ontology
      */
-    @Override
-    public void save(KnowledgeGraph ontology) {
+    public void save(Object ontology) {
         mongoTemplate.save(ontology);
     }
 
@@ -39,7 +35,6 @@ public class OntologyDaoImpl implements OntologyDao {
      * @param name
      * @return
      */
-    @Override
     public KnowledgeGraph findByName(String name) {
         Query query = new Query(Criteria.where("name").is(name));
         return mongoTemplate.findOne(query, KnowledgeGraph.class);
@@ -54,7 +49,6 @@ public class OntologyDaoImpl implements OntologyDao {
      * @param ontology
      * @return
      */
-    @Override
     public long updateOntology(String name, KnowledgeGraph ontology) {
         Query query = new Query(Criteria.where("name").is(name));
         //todo:修改字段值
@@ -64,7 +58,7 @@ public class OntologyDaoImpl implements OntologyDao {
         //更新查询返回结果集的所有
         // mongoTemplate.updateMulti(query,update,Ontology.class);
 //        if (result != null) {
-            return result.getModifiedCount();
+        return result.getModifiedCount();
 //        }
 //        return 0;
     }
@@ -74,7 +68,6 @@ public class OntologyDaoImpl implements OntologyDao {
      *
      * @param name
      */
-    @Override
     public void deleteOntologyByName(String name) {
         Query query = new Query(Criteria.where("name").is(name));
         mongoTemplate.remove(query, KnowledgeGraph.class);
