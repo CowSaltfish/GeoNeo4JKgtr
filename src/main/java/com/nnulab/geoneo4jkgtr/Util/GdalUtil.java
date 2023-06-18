@@ -43,9 +43,9 @@ public class GdalUtil {
             String file = "";
             boolean isWin = systemType.toLowerCase().indexOf("win") != -1;
             if (isWin) {
-                file = "/gdal/win32/gdalalljni.dll";
+                file = "/lib/gdal/win32/gdalalljni.dll";
             } else {
-                file = "/gdal/linux/libgdalalljni.so";
+                file = "/lib/gdal/linux/libgdalalljni.so";
             }
             //从资源文件加载动态库
             loadFromResource(file);

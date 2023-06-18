@@ -451,12 +451,6 @@ public interface BasicRelationDao extends Neo4jRepository<BasicRelation, Long> {
             "return r")
     void deleteByNodeIds(@Param("id0") Long id0, @Param("id1") Long id1);
 
-    @Query("MATCH p=()-[r:$relationship]->() RETURN r")
-    List<ScenarioRelation> findByLabel(@Param("relationship")String relationship);
-
-    @Query("MATCH p=()-[r:$relationship]->() RETURN r")
-    void setWeightOnEarlierThanRelationship();
-
     @Query("match (n) set n.id=id(n)")
     void setAllNodesId();
 

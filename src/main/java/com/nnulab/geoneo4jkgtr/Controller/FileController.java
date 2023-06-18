@@ -26,8 +26,9 @@ public class FileController {
 //        String suffix = fileName.substring(fileName.lastIndexOf('.'));
 //        String newFileName = new Date().getTime() + suffix;
 //        String path = "D:\\13222\\Desktop\\DesktopFiles\\ExperimentData\\MyProject\\KGTR\\GeoNeo4JKgtr\\src\\main\\resources\\static\\shp";
-        String path = "E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Project\\GeoNeo4jKgtr\\src\\main\\resources\\static\\shp";
-//        String path = "static/shp";
+//        String path = "E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Project\\GeoNeo4jKgtr\\src\\main\\resources\\static\\shp";
+        String path = System.getProperty("user.dir") + "\\src\\main\\resources\\static\\shp";
+//        String path = Thread.currentThread().getContextClassLoader().getResource("").getPath() + "static/shp";
         File newFile = new File(path +"/"+ fileName);
         try {
             file.transferTo(newFile);//复制shp文件
