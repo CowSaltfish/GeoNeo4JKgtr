@@ -216,11 +216,8 @@ public class KGServiceTest extends TestCase {
                         "and (r.includedAngle>173 or r.includedAngle<7)\n" +
                         "return b1");
 
-        List<Integer> Ids = new ArrayList<>();
-        for (Object boundary : ringsKg.getNodes()) {
-            Long fid = ((HashMap<String, Long>) boundary).get("fid");
-            Ids.add(fid.intValue());
-        }
+        List<Integer> Ids = ringsKg.getNodesFidList();
+
         GdalUtil.createNewShpByLayerWithId("D:\\13222\\Desktop\\DesktopFiles\\ExperimentData\\MyProject\\KGTR\\data\\Nanjing\\3857\\boundaries.shp",
                 "D:\\13222\\Desktop\\DesktopFiles\\ExperimentData\\MyProject\\KGTR\\data\\Nanjing\\3857\\fault\\boundaries_straight.shp", Ids);
     }

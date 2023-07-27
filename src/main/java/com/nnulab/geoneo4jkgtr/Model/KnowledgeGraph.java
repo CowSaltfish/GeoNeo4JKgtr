@@ -9,6 +9,8 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Field;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 @Data
@@ -31,4 +33,13 @@ public class KnowledgeGraph {
     @JSONField(name="relationships")
     private List<ScenarioRelation> relationships;
 
+
+    public List<Integer> getNodesFidList() {
+        List<Integer> Ids = new ArrayList<>();
+        for (Object boundary : this.getNodes()) {
+            Long fid = ((HashMap<String, Long>) boundary).get("fid");
+            Ids.add(fid.intValue());
+        }
+        return Ids;
+    }
 }

@@ -177,32 +177,32 @@
 				<artifactId>spring-boot-maven-plugin</artifactId>
 
 				<!--本地运行注释，打包时放开-->
-				<configuration>
-					<includeSystemScope>true</includeSystemScope>
-				</configuration>
+<!--				<configuration>-->
+<!--					<includeSystemScope>true</includeSystemScope>-->
+<!--				</configuration>-->
 
 			</plugin>
 		</plugins>
 
 		<!--本地运行注释，打包时放开-->
-		<resources>
-			<resource>
-				<directory>lib</directory>
-				<targetPath>BOOT-INF/lib/</targetPath>
-				<includes>
-					<include>**/*.jar</include>
-				</includes>
-			</resource>
-			<resource>
-				<directory>src/main/resources</directory>
-				<targetPath>BOOT-INF/classes/</targetPath>
-			</resource>
-		</resources>
+<!--		<resources>-->
+<!--			<resource>-->
+<!--				<directory>lib</directory>-->
+<!--				<targetPath>BOOT-INF/lib/</targetPath>-->
+<!--				<includes>-->
+<!--					<include>**/*.jar</include>-->
+<!--				</includes>-->
+<!--			</resource>-->
+<!--			<resource>-->
+<!--				<directory>src/main/resources</directory>-->
+<!--				<targetPath>BOOT-INF/classes/</targetPath>-->
+<!--			</resource>-->
+<!--		</resources>-->
 
 	</build>
 
 	<!-- 打包 -->
 <!--	<packaging>jar</packaging>-->
-	<packaging>war</packaging>
+<!--	<packaging>war</packaging>-->
 
 </project>

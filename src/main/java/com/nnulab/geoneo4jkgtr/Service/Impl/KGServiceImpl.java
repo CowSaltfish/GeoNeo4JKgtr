@@ -162,7 +162,8 @@ public class KGServiceImpl implements KGService {
 
     @Override
     public void create(String stratumPath, String boundaryPath) {
-        String stratigraphicChronologyPath = "E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Project\\GeoNeo4jKgtr\\src\\main\\resources\\static\\StratigraphicTimeTable.csv";
+//        String stratigraphicChronologyPath = "E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Project\\GeoNeo4jKgtr\\src\\main\\resources\\static\\StratigraphicTimeTable.csv";
+        String stratigraphicChronologyPath = System.getProperty("user.dir") + "\\src\\main\\resources\\static\\StratigraphicTimeTable.csv";
         stratigraphicChronology = FileUtil.getStratigraphicChronologyFromCSV(stratigraphicChronologyPath);
         geoMap = new GeoMap(stratumPath, boundaryPath);
         //节点生成

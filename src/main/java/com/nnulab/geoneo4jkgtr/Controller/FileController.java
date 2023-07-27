@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Date;
 
 @RestController
@@ -19,7 +20,7 @@ public class FileController {
      */
     @CrossOrigin
     @PostMapping(value = "/upload")
-    public Object uploadFile(@RequestParam("file") MultipartFile file){
+    public Object uploadFile(@RequestParam("file") MultipartFile file) throws IOException {
         //todo:上传到geoserver服务器
 
         String fileName = file.getOriginalFilename();
@@ -27,14 +28,23 @@ public class FileController {
 //        String newFileName = new Date().getTime() + suffix;
 //        String path = "D:\\13222\\Desktop\\DesktopFiles\\ExperimentData\\MyProject\\KGTR\\GeoNeo4JKgtr\\src\\main\\resources\\static\\shp";
 //        String path = "E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Project\\GeoNeo4jKgtr\\src\\main\\resources\\static\\shp";
-        String path = System.getProperty("user.dir") + "\\src\\main\\resources\\static\\shp";
+        String path = System.getProperty("user.dir") + "\\src\\main\\resources\\static";
 //        String path = Thread.currentThread().getContextClassLoader().getResource("").getPath() + "static/shp";
-        File newFile = new File(path +"/"+ fileName);
+        File shpFile = new File(path +"/shp");
+        File geojsonFile = new File(path +"/geojson");
+        if (!shpFile.exists()){
+            shpFile.mkdirs();
+        }
+        if (!geojsonFile.exists()){
+            geojsonFile.mkdirs();
+        }
+
+        File newFile = new File(path +"/shp/"+ fileName);
         try {
             file.transferTo(newFile);//复制shp文件
 
             JSONObject jsObject = new JSONObject();
-            jsObject.put("shpPath", path +"\\"+ fileName);
+            jsObject.put("shpPath", path +"\\shp\\"+ fileName);
 
             return jsObject;
         }

@@ -141,6 +141,8 @@ public class KGController {
         }
     }
 
+    @CrossOrigin
+    @GetMapping("/clearAll")
     public void clearAll() {
         kgService.clearAll();
     }
