@@ -13,6 +13,8 @@ import com.nnulab.geoneo4jkgtr.Util.Neo4jUtil;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -107,7 +109,9 @@ public class EventTemporalInterpretServiceImpl implements EventTemporalInterpret
     private void CreateTemporalRelationshipBetweenDepositionEvents() {
         //获取地层年代表
         //todo 改为从mongodb中获取
-        String stratigraphicChronologyPath = "E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Project\\GeoNeo4jKgtr\\src\\main\\resources\\static\\StratigraphicTimeTable.csv";
+//        String stratigraphicChronologyPath = "E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Project\\GeoNeo4jKgtr\\src\\main\\resources\\static\\StratigraphicTimeTable.csv";
+        String stratigraphicChronologyPath = System.getProperty("user.dir") + "\\src\\main\\resources\\static\\StratigraphicTimeTable.csv";
+
         StratigraphicChronology stratigraphicChronology = FileUtil.getStratigraphicChronologyFromCSV(stratigraphicChronologyPath);
         List<String> scl = stratigraphicChronology.getStratigraphicChronologyList();
 
@@ -163,19 +167,20 @@ public class EventTemporalInterpretServiceImpl implements EventTemporalInterpret
      */
     @Override
     public KnowledgeGraph detectAndCorrectTemporalConflict() {
+        //todo 断层间早于关系计算权重
+
         //获取子图
         String cypher = "MATCH p=(:GeoEvent{eventType:'FRACTURE'})-[r:EARLIERTHAN_FF]->(:GeoEvent{eventType:'FRACTURE'}) RETURN p";
-//        KnowledgeGraph knowledgeGraph = neo4jUtil.result2KG(neo4jUtil.RunCypher(cypher));
-//        MutableValueGraph<String, Integer> guavaGraph = guavaUtil.kg2GuavaGraph(knowledgeGraph);
+        KnowledgeGraph knowledgeGraph = neo4jUtil.result2KG(neo4jUtil.RunCypher(cypher));
 //        //有向环消除
-//        eliminatingDirectedLoops(guavaGraph);
+        List<List<String>> eliminatedEdges = eliminatingDirectedLoops(guavaUtil.kg2GuavaGraph(knowledgeGraph));
 
-        neo4jUtil.RunCypher("match (:Fracture{nodeName:'NE13'})-[r]->(:Fracture{nodeName:'NE14'}) delete r");
-        neo4jUtil.RunCypher("match (:Fracture{nodeName:'NW6'})-[r]->(:Fracture{nodeName:'NE13'}) delete r");
-        neo4jUtil.RunCypher("match (:Fracture{nodeName:'NW7'})-[r]->(:Fracture{nodeName:'NE6'}) delete r");
-
-
-        return neo4jUtil.result2KG(neo4jUtil.RunCypher(cypher));
+//        neo4jUtil.RunCypher("match (:Fracture{nodeName:'NE13'})-[r]->(:Fracture{nodeName:'NE14'}) delete r");
+//        neo4jUtil.RunCypher("match (:Fracture{nodeName:'NW6'})-[r]->(:Fracture{nodeName:'NE13'}) delete r");
+//        neo4jUtil.RunCypher("match (:Fracture{nodeName:'NW7'})-[r]->(:Fracture{nodeName:'NE6'}) delete r");
+        KnowledgeGraph knowledgeGraphWithoutLoops = neo4jUtil.result2KG(neo4jUtil.RunCypher(cypher));
+        knowledgeGraphWithoutLoops.addLoops(eliminatedEdges);
+        return knowledgeGraphWithoutLoops;
 
     }
 
@@ -184,17 +189,20 @@ public class EventTemporalInterpretServiceImpl implements EventTemporalInterpret
      *
      * @param graph
      */
-    private void eliminatingDirectedLoops(MutableValueGraph<String, Integer> graph) {
+    private List<List<String>> eliminatingDirectedLoops(MutableValueGraph<String, Integer> graph) {
         List<List<String>> loops = guavaUtil.searchLoops(graph);
+        List<List<String>> loops1 = new ArrayList<>();
         //不存在有向环
-        if (loops.isEmpty()) {
-            return;
-        }
+//        if (loops.isEmpty()) {
+//            return loops;
+//        }
         //基于可信度消除有向环
         for (List<String> loop : loops) {
             String[] nodeCodes = guavaUtil.getMinValueEdgeOnLoop(graph, loop);
+            loops1.add(Arrays.asList(nodeCodes));
             relationDao.deleteByNodeIds(Long.parseLong(nodeCodes[0]), Long.parseLong(nodeCodes[1]));
         }
+        return loops1;
     }
 
     /**
@@ -204,6 +212,7 @@ public class EventTemporalInterpretServiceImpl implements EventTemporalInterpret
      */
     @Override
     public KnowledgeGraph generateGeoEventSequence() {
+        //todo 拓扑排序
 
         String cypher1 = "MATCH p=(n1:GeoEvent)-[r:EARLIERTHAN_FF]->(n2:GeoEvent) \n" +
                 "where (n1.nodeName='NE6' and n2.nodeName='NW2')\n" +

@@ -66,7 +66,8 @@ public class FileController {
         //todo:存入mongodb中
 
         //存在本地文件夹中
-        String path = "E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Project\\GeoNeo4jKgtr\\src\\main\\resources\\static";
+//        String path = "E:\\Users\\LiuXianyu\\Documents\\ExperimentData\\myProject\\GraduationThesis\\Project\\GeoNeo4jKgtr\\src\\main\\resources\\static";
+        String path = System.getProperty("user.dir") + "\\src\\main\\resources\\static";
         File newFile = new File(path +"/"+ fileName);//复制csv文件
         try {
             file.transferTo(newFile);

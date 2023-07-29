@@ -52,19 +52,21 @@ public class GuavaUtil {
      */
     public String[] getMinValueEdgeOnLoop(MutableValueGraph<String, Integer> graph, List<String> loop) {
         String[] ids = new String[2];
-        String[] nodeList = graph.nodes().toArray(new String[0]);
-        ids[0] = nodeList[0];
-        ids[1] = nodeList[1];
-        Integer minValue = Integer.MAX_VALUE;
-        for (EndpointPair<String> nodes : graph.edges()) {
-            Integer edgeValue = graph.edgeValue(nodes.nodeU(), nodes.nodeV());
+        String[] ids1 = new String[2];
+        ids[0] = loop.get(0);
+        ids[1] = loop.get(1);
+        int minValue = Integer.MAX_VALUE;
+        for (int i = 0; i < loop.size() - 1; i++) {
+            ids[0] = loop.get(i);
+            ids[1] = loop.get(i + 1);
+            int edgeValue = graph.edgeValue(ids[0], ids[1]);
             if (minValue > edgeValue) {
                 minValue = edgeValue;
-                ids[0] = nodes.nodeU();
-                ids[1] = nodes.nodeV();
+                ids1[0] = ids[0];
+                ids1[1] = ids[1];
             }
         }
-        return ids;
+        return ids1;
     }
 
 
@@ -112,13 +114,12 @@ public class GuavaUtil {
         for (String in : graph.successors(nodeCode)) {
             //若邻接顶点也在回溯中，则存在环
             if (color.get(in) == GRAY) {
-                Stack<String> loop1 = new Stack<>();
-                loop1.addAll(loop);
-                HashSet<String> loopset = new HashSet<>(loop1);
+                ArrayList<String> loop1 = new ArrayList<>(loop);
+                HashSet<String> loopSet = new HashSet<>(loop1);
 //                if (!loopSetList.contains(loopset) || !sameLoop(loopset)) {
-                if (!sameLoop(loopset)) {
-                    loops.add(new ArrayList<>(loop1));
-                    loopSetList.add(loopset);
+                if (!sameLoop(loopSet, loop1)) {//若一个环包含一个环，则只保留小环
+                    loops.add(loop1);
+                    loopSetList.add(loopSet);
                 }
                 return;
             }
@@ -133,9 +134,19 @@ public class GuavaUtil {
 //        color.put(nodeCode, BLACK);
     }
 
-    private boolean sameLoop(HashSet<String> loopset) {
+    private boolean sameLoop(HashSet<String> loopSet, ArrayList<String> loop) {
         for (Set<String> ls : loopSetList) {
-            if (loopset.containsAll(ls)) {
+            if (loopSet.containsAll(ls)) {
+                return true;
+            } else if (ls.containsAll(loopSet)) {
+                loopSetList.remove(ls);
+                loopSetList.add(loopSet);
+                for (List<String> l : loops) {
+                    if (l.containsAll(loop)) {
+                        loops.remove(l);
+                        loops.add(loop);
+                    }
+                }
                 return true;
             }
         }

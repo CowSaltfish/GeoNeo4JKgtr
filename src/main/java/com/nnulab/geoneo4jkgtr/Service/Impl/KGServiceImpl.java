@@ -484,7 +484,6 @@ public class KGServiceImpl implements KGService {
 
             Boundary boundary = new Boundary();
             boundary.setFid(i);
-
             //抽取界线几何信息
             double[][] vertices = new double[0][];
             if (feature.GetGeometryRef().GetPointCount() != 0) {
@@ -493,21 +492,25 @@ public class KGServiceImpl implements KGService {
                 vertices = feature.GetGeometryRef().GetGeometryRef(0).GetPoints();
             }
             boundary.setStrike(GeometryUtil.calLineStrike(vertices, false));
+            boundary.setLength(feature.GetGeometryRef().Length());
 
             //断层
             if ((-1 != boundaryLayer.FindFieldIndex("type", 0) && "fault".equals(feature.GetFieldAsString("type")))
                     || (-1 != boundaryLayer.FindFieldIndex("Type", 0) && "fault".equals(feature.GetFieldAsString("Type")))) {
 //                List<Fault> faults = findFaultByName(feature.GetFieldAsString("name"));
-                List<Fault> faults = findFaultByName(feature.GetFieldAsString("code"));
+                String code = feature.GetFieldAsString("code");
+                List<Fault> faults = findFaultByName(code);
                 if (!faults.isEmpty()) {//数据库中存在这个断层
                     //添加界线属于断层关系
                     saveRelation(new BelongRelation(boundary, faults.get(0)));
+                    //增加该断层的长度
+                    neo4jUtil.RunCypher("MATCH (n:Fault) where n.nodeName=" + code + " set n.length+=" + boundary.getLength());
                 } else {
                     Fault fault = new Fault();
 //                    fault.setName(feature.GetFieldAsString("name"));
                     fault.setName(feature.GetFieldAsString("code"));
                     fault.setCode(feature.GetFieldAsString("code"));
-
+                    fault.setLength(boundary.getLength());
                     //加入新断层
                     System.out.println("创建断层节点" + "[" + fault + "]");
                     saveNode(fault);

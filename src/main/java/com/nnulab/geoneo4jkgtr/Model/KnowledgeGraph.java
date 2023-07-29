@@ -33,6 +33,8 @@ public class KnowledgeGraph {
     @JSONField(name="relationships")
     private List<ScenarioRelation> relationships;
 
+    @JSONField(name="loops")
+    private List<List<String>> loops = new ArrayList<>();
 
     public List<Integer> getNodesFidList() {
         List<Integer> Ids = new ArrayList<>();
@@ -42,4 +44,9 @@ public class KnowledgeGraph {
         }
         return Ids;
     }
+
+    public void addLoops(List<List<String>> newLoops){
+        loops.addAll(newLoops);
+    }
+
 }
