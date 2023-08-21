@@ -5,7 +5,7 @@ Automatic analysis system of geological events based on knowledge map;
 GeoESI System Rear-end;
 
 ## Developpers
-Shi-Yu Xu; Xian-Yu Liu; An-Bo Li;
+Xian-Yu Liu; Shi-Yu Xu; An-Bo Li;
 
 ## Contact details
 Address: Nanjing Normal University, School of Geography, Nanjing, China;
