@@ -193,9 +193,9 @@ public class EventTemporalInterpretServiceImpl implements EventTemporalInterpret
         List<List<String>> loops = guavaUtil.searchLoops(graph);
         List<List<String>> loops1 = new ArrayList<>();
         //不存在有向环
-//        if (loops.isEmpty()) {
-//            return loops;
-//        }
+        if (loops.isEmpty()) {
+            return loops;
+        }
         //基于可信度消除有向环
         for (List<String> loop : loops) {
             String[] nodeCodes = guavaUtil.getMinValueEdgeOnLoop(graph, loop);
